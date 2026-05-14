@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano di Progetto v2 — SellaLab Margini Clienti su Piattaforma Backbone</title>
+<style>
+  @page { size: A4; margin: 20mm; }
+  @media print {
+    .page-break { page-break-before: always; }
+    body { font-size: 10pt; }
+    h1 { font-size: 18pt; }
+    h2 { font-size: 14pt; }
+    h3 { font-size: 12pt; }
+    table { font-size: 9pt; }
+    .no-print { display: none; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    line-height: 1.6;
+    color: #1a1a2e;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 40px;
+    background: #fff;
+  }
+  .cover { text-align: center; padding: 80px 0 60px; border-bottom: 4px solid #003366; margin-bottom: 40px; }
+  .cover h1 { font-size: 28px; color: #003366; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .cover .subtitle { font-size: 18px; color: #555; margin-bottom: 40px; }
+  .cover-meta { display: inline-block; text-align: left; background: #f7f9fc; border: 1px solid #d0d8e8; border-radius: 8px; padding: 20px 40px; font-size: 14px; line-height: 2; }
+  .cover-meta strong { color: #003366; min-width: 200px; display: inline-block; }
+
+  h2 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 6px; margin-top: 40px; font-size: 20px; }
+  h3 { color: #1a5276; margin-top: 30px; font-size: 16px; }
+  h4 { color: #2c3e50; margin-top: 20px; font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+  th { background: #003366; color: #fff; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #f7f9fc; }
+  tr:hover { background: #eef3fa; }
+  td:first-child { font-weight: 500; }
+
+  .table-risk th { background: #8b0000; }
+  .table-gate th { background: #b8860b; }
+  .table-pnr th { background: #2d5016; }
+  .table-effort th { background: #1a5276; }
+
+  blockquote { border-left: 4px solid #b8860b; background: #fffdf0; margin: 20px 0; padding: 15px 20px; border-radius: 0 8px 8px 0; }
+  blockquote.gate-red { border-left-color: #c0392b; background: #fdf2f2; }
+  blockquote h4 { margin-top: 0; color: #8b0000; }
+
+  .checklist { list-style: none; padding-left: 5px; }
+  .checklist li { padding: 3px 0; }
+  .checklist li::before { content: "☐ "; font-size: 14px; }
+
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #fff; }
+  .badge-green { background: #27ae60; }
+  .badge-yellow { background: #f39c12; }
+  .badge-red { background: #c0392b; }
+  .badge-blue { background: #2980b9; }
+  .badge-grey { background: #7f8c8d; }
+
+  .gantt-box { background: #1a1a2e; color: #e0e0e0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace; font-size: 11px; line-height: 1.4; white-space: pre; margin: 20px 0; }
+  .tree-box { background: #f0f4f8; border: 1px solid #c0d0e0; border-radius: 8px; padding: 20px; font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.5; white-space: pre; overflow-x: auto; margin: 20px 0; }
+
+  .alert { padding: 12px 18px; border-radius: 6px; margin: 15px 0; font-size: 13px; }
+  .alert-warning { background: #fef9e7; border: 1px solid #f9e79f; color: #7d6608; }
+  .alert-danger { background: #fdedec; border: 1px solid #f5b7b1; color: #922b21; }
+  .alert-info { background: #eaf2f8; border: 1px solid #aed6f1; color: #1a5276; }
+  .alert-success { background: #eafaf1; border: 1px solid #a9dfbf; color: #1e8449; }
+
+  .milestone-header { background: linear-gradient(135deg, #003366, #1a5276); color: #fff; padding: 12px 20px; border-radius: 8px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+  .milestone-header h3 { color: #fff; margin: 0; border: none; padding: 0; }
+  .milestone-header .meta { font-size: 12px; opacity: 0.85; }
+
+  .toc { background: #f7f9fc; border: 1px solid #d0d8e8; border-radius: 8px; padding: 20px 30px; margin: 20px 0; }
+  .toc h3 { margin-top: 0; color: #003366; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 3px 0; }
+  .toc a { color: #1a5276; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .note { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px 18px; margin: 15px 0; border-radius: 0 6px 6px 0; font-size: 13px; }
+
+  .progress-bar { background: #e0e0e0; border-radius: 10px; height: 22px; margin: 10px 0; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, #27ae60, #2ecc71); height: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; }
+
+  .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #999; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>Piano di Progetto — v2</h1>
+  <div class="subtitle">SellaLab Margini Clienti su Piattaforma Backbone</div>
+  <div class="cover-meta">
+    <strong>Progetto:</strong> 0023650 — SellaLab Centrico FrameworkPM<br>
+    <strong>Piattaforma target:</strong> Backbone (originariamente Oracle)<br>
+    <strong>Team:</strong> 1 Programmatore Senior + 1 Analista<br>
+    <strong>Periodo:</strong> 01/05/2026 – 15/09/2026 (~86 gg lavorativi)<br>
+    <strong>Effort backbone:</strong> 30 gg/uomo (contingency inclusa)<br>
+    <strong>Effort fallback Oracle:</strong> 36 gg/uomo<br>
+    <strong>Data redazione:</strong> 14/05/2026 — revisione 2<br>
+    <strong>PM Centrico:</strong> Gaetano Stomboli<br>
+    <strong>PL Cliente:</strong> Marino Giuseppe / Petrazzi Marco
+  </div>
+</div>
+
+<!-- STATUS -->
+<div style="background: linear-gradient(135deg, #eafaf1, #d5f5e3); border: 2px solid #27ae60; border-radius: 8px; padding: 15px 20px; margin: 20px 0;">
+  <h3 style="color: #1e8449; margin-top: 0; margin-bottom: 8px;">📊 Stato al 14/05/2026</h3>
+  <div class="progress-bar"><div class="progress-fill" style="width: 15%;">15% — Fase 0a completata</div></div>
+  <div style="font-size: 12px; margin-top: 8px;">
+    <strong>✅ Fatto:</strong> Raccolta requisiti, analisi funzionale avviata, stima effort (30 gg backbone / 36 gg Oracle), issue piattaforma aperto<br>
+    <strong>🔄 In corso:</strong> Riunioni con team architetture, analisi funzionale<br>
+    <strong>➡️ Prossimo:</strong> Accessi backbone, PoC, tavoli stakeholder
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Indice</h3>
+  <ol>
+    <li><a href="#sec1">Premessa e Fattori di Rischio</a></li>
+    <li><a href="#sec2">Effort e Calendario</a></li>
+    <li><a href="#sec3">Gantt Dettagliato</a></li>
+    <li><a href="#sec4">Milestone — Obiettivi, Sotto-attività e Criticità</a></li>
+    <li><a href="#sec5">Riepilogo Milestone e Timeline</a></li>
+    <li><a href="#sec6">Analisi Point of No Return</a></li>
+    <li><a href="#sec7">Raccomandazioni</a></li>
+    <li><a href="#sec8">Confronto Sintetico Backbone vs Oracle</a></li>
+  </ol>
+</div>
+
+<!-- SECTION 1 -->
+<h2 id="sec1">1. Premessa e Fattori di Rischio</h2>
+
+<p>Il progetto è stimato in <strong>36 gg/uomo su Oracle</strong> e <strong>30 gg/uomo su Backbone</strong>. La stima backbone include già la contingency per l'inesperienza del team sulla nuova piattaforma. Il team ha dedicato le prime due settimane (01–14/05) alla raccolta requisiti, analisi funzionale, stima effort e avvio del dialogo con il team architetture per la nuova piattaforma.</p>
+
+<table class="table-risk">
+  <tr><th>Fattore di rischio</th><th>Impatto</th><th>Mitigazione</th></tr>
+  <tr><td><strong>Inesperienza</strong> team sulla piattaforma</td><td><span class="badge badge-red">Alto</span></td><td>Contingency già inclusa nei 30 gg. PoC pianificato in S4. Riunioni architettura in corso.</td></tr>
+  <tr><td><strong>Assenza formazione formale</strong></td><td><span class="badge badge-yellow">Medio-Alto</span></td><td>Autoformazione + supporto dal team architetture (già avviato)</td></tr>
+  <tr><td><strong>Assenza PowerCenter</strong> su backbone</td><td><span class="badge badge-yellow">Medio-Alto</span></td><td>ETL nativo backbone (da esplorare) — investigazione in corso nelle riunioni</td></tr>
+  <tr><td><strong>Integrazione sFTP</strong> da ridisegnare</td><td><span class="badge badge-yellow">Medio</span></td><td>Analisi architetturale dedicata</td></tr>
+  <tr><td><strong>Periodo estivo</strong> (agosto)</td><td><span class="badge badge-yellow">Medio</span></td><td>Pianificazione ferie coordinate, milestone pre-ferie</td></tr>
+</table>
+
+<!-- SECTION 2 -->
+<h2 id="sec2">2. Effort e Calendario</h2>
+
+<h3>2.1 Effort</h3>
+
+<table class="table-effort">
+  <tr><th>Piattaforma</th><th style="text-align:center">Effort (gg/uomo)</th><th>Note</th></tr>
+  <tr><td><strong>Oracle</strong> (team esperto)</td><td style="text-align:center"><strong>36</strong></td><td>Stima standard, nessun rischio tecnico</td></tr>
+  <tr><td><strong>Backbone</strong> (contingency inclusa)</td><td style="text-align:center"><strong>30</strong></td><td>Include contingency per inesperienza. La piattaforma è nativamente più efficiente.</td></tr>
+</table>
+
+<div class="note">
+  <strong>Nota:</strong> L'effort backbone (30 gg) è inferiore a Oracle (36 gg) del ~17%. La contingency per l'inesperienza del team è già incorporata nella stima e non richiede maggiorazione aggiuntiva. Con 86 gg lavorativi disponibili su 2 risorse, il margine è di <strong>~56 gg lavorativi</strong> (molto confortevole).
+</div>
+
+<h3>2.2 Calendario Lavorativo</h3>
+
+<table>
+  <tr><th>Mese</th><th style="text-align:center">Gg lavorativi</th><th>Note</th></tr>
+  <tr><td>Maggio (dal 01/05)</td><td style="text-align:center">20</td><td>01/05 festivo. 01–14/05: analisi e requisiti già completati.</td></tr>
+  <tr><td>Giugno</td><td style="text-align:center">20</td><td>02/06 festivo (Repubblica)</td></tr>
+  <tr><td>Luglio</td><td style="text-align:center">23</td><td>—</td></tr>
+  <tr><td>Agosto</td><td style="text-align:center">~12</td><td>Stimati 10 gg ferie (10–21 agosto)</td></tr>
+  <tr><td>Settembre (1–15)</td><td style="text-align:center">11</td><td>—</td></tr>
+  <tr style="background:#e8f0fe; font-weight:700"><td>TOTALE</td><td style="text-align:center">~86</td><td>Per risorsa</td></tr>
+</table>
+
+<h3>2.3 Distribuzione Effort per Fase</h3>
+
+<table class="table-effort">
+  <tr><th>Fase</th><th>Periodo</th><th style="text-align:center">Effort (gg/u)</th><th>Stato</th></tr>
+  <tr style="background:#f0f0f0"><td>F0a — Requisiti &amp; Analisi</td><td>01/05 – 14/05</td><td style="text-align:center">~5</td><td><span class="badge badge-green">✅ Completata</span></td></tr>
+  <tr><td>F0b — PoC Backbone + Chiusura Analisi</td><td>18/05 – 29/05</td><td style="text-align:center">~5</td><td>Da avviare</td></tr>
+  <tr><td>F2 — Ingestion Dati (sFTP + parsing + DQ)</td><td>01/06 – 19/06</td><td style="text-align:center">~6</td><td>Pianificata</td></tr>
+  <tr><td>F3 — Core Dev (perimetro + margini)</td><td>29/06 – 17/07</td><td style="text-align:center">~8</td><td>Pianificata</td></tr>
+  <tr><td>F4 — Automazione (ETL + scheduler)</td><td>20/07 – 31/07</td><td style="text-align:center">~3</td><td>Pianificata</td></tr>
+  <tr><td>F5 — UAT</td><td>24/08 – 05/09</td><td style="text-align:center">~2</td><td>Pianificata</td></tr>
+  <tr><td>F6 — Go-Live</td><td>08/09 – 15/09</td><td style="text-align:center">~1</td><td>Pianificata</td></tr>
+  <tr style="background:#e8f0fe; font-weight:700"><td>TOTALE</td><td></td><td style="text-align:center">~30</td><td></td></tr>
+</table>
+
+<!-- SECTION 3 -->
+<div class="page-break"></div>
+<h2 id="sec3">3. Gantt Dettagliato</h2>
+
+<p><strong>Legenda:</strong> 🔵 Analista &nbsp;|&nbsp; 🟢 Programmatore Senior &nbsp;|&nbsp; 🟡 Entrambi &nbsp;|&nbsp; ◆ Milestone &nbsp;|&nbsp; 🔴 Gate &nbsp;|&nbsp; ░░ Già completato</p>
+
+<div class="gantt-box">                        MAGGIO                GIUGNO               LUGLIO              AGOSTO           SET
+                   S1  S2  S3  S4  S5  |  S6  S7  S8  S9  |  S10 S11 S12 S13 S14  | S15     FERIE      S18 S19 S20
+                   01  04  11  18  25     01  08  15  22     29  06  13  20  27     03  10  17  24  31   24  01  08  15
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 0a - ANALISI  ░░░░░░░░░░░░ ✅
+  🔵 Requisiti     ░░░░░░░░░░░░
+  🟢 Issue/Arch.   ░░░░░░░░░░░░
+  🟢🔵 Stima effort ░░░░░░░░░░░░
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 0b - PoC              ████████
+  🟢 PoC backbone          ████
+  🔵 Tavoli stakeholder    ████████
+  🟢 Architettura              ████
+                                    ◆ M1 (29/05)
+                                    🔴 GO/NO-GO #1
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 2 - INGESTION                  ████████████
+  🟢 Flusso sFTP+parsing           ████████████
+  🔵 DQ + test cases                ████████
+  🟡 Test e2e                               ████
+                                                ◆ M2 (19/06)
+                                                    🔴 GO/NO-GO #2 — PNR
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 3 - CORE DEV                                   ████████████████
+  🟢 Proc. perimetro                                ████████
+  🟢 Proc. margini                                          ████████
+  🔵 Test progressivi                                   ████████████
+                                                                    ◆ M3 (17/07)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 4 - AUTOMAZIONE                                                ████████
+  🟢 ETL + scheduler                                               ████████
+  🔵 Test pipeline                                                      ████
+                                                                        ◆ M4 (31/07)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+         BUFFER                                                             ████
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+         FERIE ESTIVE                                                           ██████████
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 5 - UAT                                                                                ████████████
+  🟡 Bug fixing + UAT                                                                       ████████████
+                                                                                                     ◆ M5 (05/09)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+FASE 6 - GO-LIVE                                                                                     ████████
+  🟢 Deploy                                                                                          ████
+  🔵 Validazione                                                                                     ████████
+                                                                                                         ◆ M6 (15/09)</div>
+
+<!-- SECTION 4 -->
+<div class="page-break"></div>
+<h2 id="sec4">4. Milestone — Obiettivi, Sotto-attività e Criticità</h2>
+
+<!-- M1 (was M0+M1 combined) -->
+<div class="milestone-header">
+  <h3>◆ M1 — Analisi, Architettura e PoC Backbone</h3>
+  <span class="meta">29/05/2026 &nbsp;|&nbsp; S4–S5 &nbsp;|&nbsp; GATE #1</span>
+</div>
+
+<h4>Obiettivo</h4>
+<p>Completare l'analisi funzionale, validare la fattibilità tecnica backbone tramite PoC, e produrre il disegno architetturale. Prendere la decisione GO/NO-GO.</p>
+
+<h4>Stato al 14/05</h4>
+<div class="alert alert-success">
+  <strong>Già completato:</strong> Raccolta requisiti iniziale, analisi funzionale avviata (~60%), stima effort (30/36 gg), issue piattaforma aperto, riunioni architettura in corso.
+</div>
+
+<h4>Sotto-attività residue (15/05 → 29/05)</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort (gg)</th><th>Output atteso</th></tr>
+  <tr><td>1.1</td><td>Richiesta accessi ambiente dev backbone</td><td>🟢</td><td style="text-align:center">0,5</td><td>Utenze attive</td></tr>
+  <tr><td>1.2</td><td>Setup IDE/tooling backbone</td><td>🟢</td><td style="text-align:center">0,5</td><td>Ambiente locale operativo</td></tr>
+  <tr><td>1.3</td><td>PoC #1: creazione tabella DDL</td><td>🟢</td><td style="text-align:center">0,5</td><td>Tabella creata e visibile</td></tr>
+  <tr><td>1.4</td><td>PoC #2: procedura con logica (IF, LOOP, cursori, exception)</td><td>🟢</td><td style="text-align:center">1,0</td><td>Procedura eseguita</td></tr>
+  <tr><td>1.5</td><td>PoC #3: lettura cross-schema da datamart CoGe</td><td>🟢</td><td style="text-align:center">1,0</td><td>Query cross-schema funzionante</td></tr>
+  <tr><td>1.6</td><td>Kick-off formale con Team SellaLab</td><td>🔵</td><td style="text-align:center">0,5</td><td>Minute + requisiti</td></tr>
+  <tr><td>1.7</td><td>Tavolo con Barbara Salucci: regole perimetro</td><td>🔵</td><td style="text-align:center">1,0</td><td>Regole validate</td></tr>
+  <tr><td>1.8</td><td>Tavolo con Team SellaLab: marginalità</td><td>🔵</td><td style="text-align:center">1,0</td><td>Mappatura voci → tabelle</td></tr>
+  <tr><td>1.9</td><td>Definizione data model + bozza tracciati sFTP</td><td>🟢🔵</td><td style="text-align:center">1,5</td><td>Schema tabelle + formato CSV</td></tr>
+  <tr><td>1.10</td><td>Report fattibilità tecnica (PoC + ETL + scheduling)</td><td>🟢</td><td style="text-align:center">0,5</td><td>Report PoC</td></tr>
+  <tr><td>1.11</td><td>Finalizzazione analisi funzionale v1.0</td><td>🔵</td><td style="text-align:center">1,5</td><td>Documento completo</td></tr>
+  <tr><td>1.12</td><td>Review e approvazione PM Centrico</td><td>🟢🔵</td><td style="text-align:center">0,5</td><td>Documento approvato</td></tr>
+</table>
+
+<h4>Criteri di accettazione</h4>
+<ul class="checklist">
+  <li>3 PoC backbone completati (tabella, procedura, cross-schema)</li>
+  <li>Regole perimetro validate con Barbara Salucci</li>
+  <li>Voci marginalità mappate su tabelle sorgente</li>
+  <li>Analisi funzionale v1.0 approvata dal PM</li>
+  <li>Architettura sFTP/ETL/scheduling delineata</li>
+</ul>
+
+<h4>Criticità e rischi</h4>
+<table class="table-risk">
+  <tr><th>#</th><th>Rischio</th><th>Prob.</th><th>Impatto</th><th>Mitigazione</th></tr>
+  <tr><td>R1.1</td><td>Accessi backbone non pronti</td><td>Media</td><td><span class="badge badge-red">Bloccante</span></td><td>Escalation se non ottenuti entro 19/05. Le riunioni architettura in corso facilitano.</td></tr>
+  <tr><td>R1.2</td><td>Cross-schema CoGe non funzionante</td><td>Media</td><td><span class="badge badge-red">Critico</span></td><td><strong>Blocker architetturale.</strong> Verificare entro 21/05.</td></tr>
+  <tr><td>R1.3</td><td>Stakeholder non disponibili per tavoli</td><td>Media</td><td><span class="badge badge-red">Alto</span></td><td>Convocare entro 15/05. Slot backup 26–28/05.</td></tr>
+  <tr><td>R1.4</td><td>Nessun ETL nativo su backbone</td><td>Bassa</td><td><span class="badge badge-yellow">Medio</span></td><td>Fallback: script wrapper. Le riunioni architettura chiariscono questo punto.</td></tr>
+</table>
+
+<!-- Gate #1 -->
+<blockquote class="gate-red">
+  <h4>🔴 GO/NO-GO Gate #1 — 29/05/2026</h4>
+  <p><strong>Domanda chiave:</strong> <em>La piattaforma backbone è tecnicamente idonea per questo progetto?</em></p>
+  <table class="table-gate">
+    <tr><th>#</th><th>Criterio</th><th style="text-align:center">Peso</th><th style="text-align:center">Esito</th></tr>
+    <tr><td>G1.1</td><td>3 PoC completati con successo?</td><td style="text-align:center"><span class="badge badge-red">Bloccante</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.2</td><td>Logica procedurale supportata (IF, LOOP, cursori, exception)?</td><td style="text-align:center"><span class="badge badge-red">Bloccante</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.3</td><td>Lettura cross-schema dal datamart CoGe funzionante?</td><td style="text-align:center"><span class="badge badge-red">Bloccante</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.4</td><td>Meccanismo ETL/scheduling identificato?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.5</td><td>Integrazione sFTP fattibile?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.6</td><td>Velocità sviluppo ragionevole vs Oracle?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G1.7</td><td>Team fiducioso di completare nei tempi?</td><td style="text-align:center"><span class="badge badge-blue">Medio</span></td><td style="text-align:center">☐</td></tr>
+  </table>
+  <p><strong>Regola:</strong> Tutti Bloccanti OK + ≥ 2/3 Alto OK → ✅ GO &nbsp;|&nbsp; Qualsiasi Bloccante KO → 🔴 STOP Oracle &nbsp;|&nbsp; Bloccanti OK ma ≥ 2 Alto KO → ⚠️ GO condizionato</p>
+  <div class="alert alert-success">
+    <strong>Se switch al 29/05:</strong> ~74 gg residui. Effort Oracle ~31 gg (riutilizzabili ~5 gg analisi) → ~23 gg calendario. <strong>Margine: +51 gg → progetto Oracle molto confortevole.</strong>
+  </div>
+</blockquote>
+
+<!-- M2 -->
+<div class="page-break"></div>
+<div class="milestone-header">
+  <h3>◆ M2 — Flusso Ingestion Dati Operativo</h3>
+  <span class="meta">19/06/2026 &nbsp;|&nbsp; 15 gg lavorativi &nbsp;|&nbsp; 🟢 + 🔵</span>
+</div>
+
+<h4>Obiettivo</h4>
+<p>Flusso completo: caricamento sFTP dei tracciati contatti → parsing → data quality → tabella contatti su backbone.</p>
+
+<h4>Sotto-attività</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort</th><th>Output</th></tr>
+  <tr><td>2.1</td><td>Tabelle contatti privati e aziende (DDL + indici)</td><td>🟢</td><td style="text-align:center">1,0</td><td>Tabelle create</td></tr>
+  <tr><td>2.2</td><td>Procedura parsing tracciato privati</td><td>🟢</td><td style="text-align:center">2,0</td><td>Procedura testata</td></tr>
+  <tr><td>2.3</td><td>Procedura parsing tracciato aziende</td><td>🟢</td><td style="text-align:center">1,5</td><td>Procedura testata</td></tr>
+  <tr><td>2.4</td><td>Configurazione flusso sFTP</td><td>🟢</td><td style="text-align:center">1,0</td><td>Flusso e2e</td></tr>
+  <tr><td>2.5</td><td>Controlli data quality automatici</td><td>🟢</td><td style="text-align:center">1,0</td><td>Procedura DQ</td></tr>
+  <tr><td>2.6</td><td>Coordinamento CNT IT DQ (Dario Bertodo)</td><td>🔵</td><td style="text-align:center">1,5</td><td>Infrastruttura sFTP</td></tr>
+  <tr><td>2.7</td><td>Dati di test + test cases</td><td>🔵</td><td style="text-align:center">1,5</td><td>Dataset + TC</td></tr>
+  <tr><td>2.8</td><td>Test end-to-end + bug fixing</td><td>🟢🔵</td><td style="text-align:center">1,5</td><td>Report test</td></tr>
+</table>
+
+<h4>Criticità</h4>
+<table class="table-risk">
+  <tr><th>#</th><th>Rischio</th><th>Prob.</th><th>Impatto</th><th>Mitigazione</th></tr>
+  <tr><td>R2.1</td><td>Infrastruttura sFTP non pronta (CNT IT DQ)</td><td>Alta</td><td><span class="badge badge-red">Bloccante</span></td><td>Richiedere a S4. Se non pronta: caricamento manuale temporaneo.</td></tr>
+  <tr><td>R2.2</td><td>Formato tracciati non definito</td><td>Media</td><td><span class="badge badge-red">Alto</span></td><td>Proporre formato CSV standard in M1</td></tr>
+  <tr><td>R2.3</td><td>Performance caricamento scadenti</td><td>Bassa</td><td><span class="badge badge-yellow">Medio</span></td><td>Bulk loading nativo</td></tr>
+</table>
+
+<!-- Gate #2 -->
+<blockquote class="gate-red">
+  <h4>🔴 GO/NO-GO Gate #2 — POINT OF NO RETURN — 26/06/2026</h4>
+  <p>1 settimana dopo M2 per assessment a freddo.</p>
+  <table class="table-gate">
+    <tr><th>#</th><th>Criterio</th><th style="text-align:center">Peso</th><th style="text-align:center">Esito</th></tr>
+    <tr><td>G2.1</td><td>Flusso sFTP end-to-end funzionante?</td><td style="text-align:center"><span class="badge badge-red">Bloccante</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.2</td><td>No impedimenti tecnici strutturali?</td><td style="text-align:center"><span class="badge badge-red">Bloccante</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.3</td><td>Performance OK (≤ 5 min per 10k record)?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.4</td><td>Velocità sviluppo accettabile?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.5</td><td>Slittamento ≤ 3 gg?</td><td style="text-align:center"><span class="badge badge-yellow">Alto</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.6</td><td>Team fiducioso per M3?</td><td style="text-align:center"><span class="badge badge-blue">Medio</span></td><td style="text-align:center">☐</td></tr>
+    <tr><td>G2.7</td><td>Dipendenze gestibili?</td><td style="text-align:center"><span class="badge badge-blue">Medio</span></td><td style="text-align:center">☐</td></tr>
+  </table>
+  <div class="alert alert-success">
+    <strong>Se switch al 26/06:</strong> ~56 gg residui. Effort Oracle ~26 gg → ~19 gg calendario. <strong>Margine: +37 gg → confortevole.</strong>
+  </div>
+</blockquote>
+
+<!-- M3 -->
+<div class="page-break"></div>
+<div class="milestone-header">
+  <h3>◆ M3 — Procedure Core Funzionanti</h3>
+  <span class="meta">17/07/2026 &nbsp;|&nbsp; 15 gg lavorativi &nbsp;|&nbsp; ⚠️ Milestone più critica</span>
+</div>
+
+<h4>Obiettivo</h4>
+<p>Realizzare le procedure core: <strong>1)</strong> perimetro clienti (matching contatti → clienti entro 6 mesi) <strong>2)</strong> attribuzione margini (impieghi, raccolta, ricavi). Tabelle output popolate e validate.</p>
+
+<h4>Sotto-attività</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort</th><th>Output</th></tr>
+  <tr><td>3.1</td><td>Matching email → ID soggetto (privati)</td><td>🟢</td><td style="text-align:center">1,5</td><td>Link email → soggetto</td></tr>
+  <tr><td>3.2</td><td>Matching P.IVA → ID soggetto (aziende)</td><td>🟢</td><td style="text-align:center">1,0</td><td>Link P.IVA → soggetto</td></tr>
+  <tr><td>3.3</td><td>Attribuzione ID conto</td><td>🟢</td><td style="text-align:center">0,5</td><td>Link soggetto → conti</td></tr>
+  <tr><td>3.4</td><td>Regole esclusione + logica 6 mesi</td><td>🟢</td><td style="text-align:center">1,0</td><td>Flag cliente calcolato</td></tr>
+  <tr><td>3.5</td><td>Taggatura incrementale + storico dal 2013</td><td>🟢</td><td style="text-align:center">1,5</td><td>Storico completo</td></tr>
+  <tr><td>3.6</td><td>Tabella perimetro su datamart CoGe</td><td>🟢</td><td style="text-align:center">0,5</td><td>Tabella popolata</td></tr>
+  <tr><td>3.7</td><td>Margine impieghi (Banca Sella)</td><td>🟢</td><td style="text-align:center">1,5</td><td>Margini calcolati</td></tr>
+  <tr><td>3.8</td><td>Margine raccolta (BS + BPS)</td><td>🟢</td><td style="text-align:center">1,5</td><td>Margini calcolati</td></tr>
+  <tr><td>3.9</td><td>Ricavi per voce + anno corrente vs precedente</td><td>🟢</td><td style="text-align:center">1,5</td><td>Tabella margini</td></tr>
+  <tr><td>3.10</td><td>Test unitari + validazione vs golden dataset</td><td>🔵</td><td style="text-align:center">3,0</td><td>Quadratura ± 1%</td></tr>
+  <tr><td>3.11</td><td>Test regressione storico</td><td>🔵🟢</td><td style="text-align:center">1,0</td><td>Coerenza storico</td></tr>
+</table>
+
+<h4>Criteri di accettazione</h4>
+<ul class="checklist">
+  <li>Tasso matching email/P.IVA → ID soggetto ≥ 90%</li>
+  <li>Dipendenti gruppo esclusi al 100%</li>
+  <li>Flag cliente corretto su campione di 50 contatti</li>
+  <li>Margini quadrano ± 1% con Oracle</li>
+  <li>Taggatura incrementale: no duplicati su run ripetuti</li>
+</ul>
+
+<h4>Criticità</h4>
+<table class="table-risk">
+  <tr><th>#</th><th>Rischio</th><th>Prob.</th><th>Impatto</th><th>Mitigazione</th></tr>
+  <tr><td>R3.1</td><td>Tasso matching basso (&lt; 80%)</td><td>Alta</td><td><span class="badge badge-red">Alto</span></td><td>Matching progressivo (esatto → normalizzato)</td></tr>
+  <tr><td>R3.2</td><td>Storico dal 2013 complesso</td><td>Media</td><td><span class="badge badge-red">Alto</span></td><td>Caricamento batch separato</td></tr>
+  <tr><td>R3.3</td><td>Accesso tabelle Banca Patrimoni</td><td>Media</td><td><span class="badge badge-red">Critico</span></td><td>Verificare in PoC #3</td></tr>
+  <tr><td>R3.4</td><td>Performance join tabelle grandi</td><td>Bassa</td><td><span class="badge badge-yellow">Medio</span></td><td>Materializzazione intermedia</td></tr>
+</table>
+
+<!-- M4 -->
+<div class="milestone-header">
+  <h3>◆ M4 — Pipeline Automatizzata Completa</h3>
+  <span class="meta">31/07/2026 &nbsp;|&nbsp; 10 gg lavorativi &nbsp;|&nbsp; Pre-ferie</span>
+</div>
+
+<h4>Sotto-attività</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort</th><th>Output</th></tr>
+  <tr><td>4.1</td><td>Procedura controlli (coerenza, completezza, andamentale)</td><td>🟢</td><td style="text-align:center">2,0</td><td>Report anomalie</td></tr>
+  <tr><td>4.2</td><td>ETL backbone (orchestrazione step sequenziali)</td><td>🟢</td><td style="text-align:center">2,0</td><td>ETL configurato</td></tr>
+  <tr><td>4.3</td><td>Schedulazione mensile + alerting</td><td>🟢</td><td style="text-align:center">1,0</td><td>Job schedulato</td></tr>
+  <tr><td>4.4</td><td>Test integrazione su 3 mesi storici</td><td>🟢🔵</td><td style="text-align:center">2,0</td><td>3 run OK</td></tr>
+  <tr><td>4.5</td><td>Template output Excel + runbook operativo</td><td>🔵</td><td style="text-align:center">1,0</td><td>Documentazione</td></tr>
+</table>
+
+<div class="alert alert-warning">
+  <strong>⚠️ M4 deve chiudersi entro il 31/07.</strong> La settimana 03–07/08 è buffer. Le date UAT con SellaLab devono essere concordate PRIMA delle ferie.
+</div>
+
+<!-- M5 -->
+<div class="milestone-header">
+  <h3>◆ M5 — UAT Superata</h3>
+  <span class="meta">05/09/2026 &nbsp;|&nbsp; 10 gg lavorativi &nbsp;|&nbsp; Post-ferie</span>
+</div>
+
+<h4>Sotto-attività</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort</th><th>Output</th></tr>
+  <tr><td>5.1</td><td>Preparazione ambiente UAT + run dati reali</td><td>🟢</td><td style="text-align:center">1,5</td><td>Ambiente pronto</td></tr>
+  <tr><td>5.2</td><td>Demo con Team SellaLab</td><td>🟢🔵</td><td style="text-align:center">0,5</td><td>Feedback raccolto</td></tr>
+  <tr><td>5.3</td><td>Supporto UAT + raccolta difetti</td><td>🔵</td><td style="text-align:center">2,0</td><td>Log issue</td></tr>
+  <tr><td>5.4</td><td>Bug fixing P1/P2/P3</td><td>🟢</td><td style="text-align:center">2,5</td><td>Bug risolti</td></tr>
+  <tr><td>5.5</td><td>Prima estrazione reale + report UAT</td><td>🟢🔵</td><td style="text-align:center">1,5</td><td>Estrazione + report</td></tr>
+  <tr><td>5.6</td><td>Approvazione formale UAT</td><td>🔵</td><td style="text-align:center">0,5</td><td>Verbale</td></tr>
+</table>
+
+<!-- M6 -->
+<div class="milestone-header">
+  <h3>◆ M6 — Go-Live</h3>
+  <span class="meta">15/09/2026 &nbsp;|&nbsp; 6 gg lavorativi &nbsp;|&nbsp; Hard deadline</span>
+</div>
+
+<h4>Sotto-attività</h4>
+<table>
+  <tr><th>#</th><th>Attività</th><th>Chi</th><th style="text-align:center">Effort</th><th>Output</th></tr>
+  <tr><td>6.1</td><td>Deploy produzione + scheduler</td><td>🟢</td><td style="text-align:center">1,5</td><td>Artefatti deployati</td></tr>
+  <tr><td>6.2</td><td>Abilitazioni utenti + primo run reale</td><td>🟢🔵</td><td style="text-align:center">1,0</td><td>Run completato</td></tr>
+  <tr><td>6.3</td><td>Validazione output + invio a CRM SellaLab</td><td>🔵</td><td style="text-align:center">1,0</td><td>File consegnato</td></tr>
+  <tr><td>6.4</td><td>Documentazione handover</td><td>🔵</td><td style="text-align:center">1,0</td><td>Documentazione completa</td></tr>
+</table>
+
+<!-- SECTION 5 -->
+<div class="page-break"></div>
+<h2 id="sec5">5. Riepilogo Milestone e Timeline</h2>
+
+<table>
+  <tr><th>Milestone</th><th>Data</th><th style="text-align:center">Sett.</th><th style="text-align:center">Gate</th><th>Note</th></tr>
+  <tr style="background:#f0f0f0"><td>✅ Analisi e requisiti iniziali</td><td>14/05 (fatto)</td><td style="text-align:center">S3</td><td style="text-align:center">—</td><td>Fase 0a completata</td></tr>
+  <tr><td>◆ M1 — Analisi + Architettura + PoC</td><td>29/05/2026</td><td style="text-align:center">S5</td><td style="text-align:center"><span class="badge badge-green">Gate #1</span></td><td>GO/NO-GO backbone</td></tr>
+  <tr><td>◆ M2 — Flusso Ingestion</td><td>19/06/2026</td><td style="text-align:center">S8</td><td style="text-align:center">—</td><td></td></tr>
+  <tr style="background:#fef9e7"><td>🔴 Point of No Return raccomandato</td><td><strong>26/06/2026</strong></td><td style="text-align:center">S9</td><td style="text-align:center"><span class="badge badge-yellow">Gate #2</span></td><td>Decisione definitiva</td></tr>
+  <tr><td>◆ M3 — Procedure Core</td><td>17/07/2026</td><td style="text-align:center">S12</td><td style="text-align:center">—</td><td>Milestone più critica</td></tr>
+  <tr style="background:#fdedec"><td>🔴 PNR assoluto (se GO condizionato)</td><td><strong>10/07/2026</strong></td><td style="text-align:center">S11</td><td style="text-align:center"><span class="badge badge-red">Gate #3</span></td><td>Ultima possibilità switch</td></tr>
+  <tr><td>◆ M4 — Pipeline Automatizzata</td><td>31/07/2026</td><td style="text-align:center">S14</td><td style="text-align:center">—</td><td>Pre-ferie</td></tr>
+  <tr><td>Buffer</td><td>03–07/08</td><td style="text-align:center">S15</td><td style="text-align:center">—</td><td>Assorbimento slittamenti</td></tr>
+  <tr style="background:#f0f0f0"><td>🏖️ Ferie estive</td><td>10–21/08</td><td style="text-align:center">—</td><td style="text-align:center">—</td><td></td></tr>
+  <tr><td>◆ M5 — UAT Superata</td><td>05/09/2026</td><td style="text-align:center">S19</td><td style="text-align:center">—</td><td></td></tr>
+  <tr><td>◆ M6 — Go-Live 🚀</td><td>15/09/2026</td><td style="text-align:center">S20</td><td style="text-align:center">—</td><td>Hard deadline</td></tr>
+</table>
+
+<div class="note">
+  <strong>Slack totale:</strong> 30 gg effort su 86 gg lavorativi disponibili → <strong>~56 gg di margine</strong>. Anche distribuendo l'effort su 2 risorse in parallelo, il piano ha margine molto ampio.
+</div>
+
+<!-- SECTION 6 -->
+<div class="page-break"></div>
+<h2 id="sec6">6. Analisi Point of No Return</h2>
+
+<h3>6.1 Concetto</h3>
+<p>Il PNR è la data oltre la quale non è più possibile abbandonare backbone e completare su Oracle entro il 15/09. L'effort backbone è 30 gg (contingency inclusa), l'effort Oracle è 36 gg.</p>
+
+<h3>6.2 Lavoro riutilizzabile da backbone</h3>
+<table class="table-pnr">
+  <tr><th>Lavoro su backbone</th><th>Riutilizzabile</th><th style="text-align:center">Risparmio (gg)</th></tr>
+  <tr><td>Analisi funzionale completa</td><td>✅ Totalmente</td><td style="text-align:center">5,0</td></tr>
+  <tr><td>Specifiche tracciati sFTP</td><td>✅ Totalmente</td><td style="text-align:center">2,0</td></tr>
+  <tr><td>Regole perimetro con stakeholder</td><td>✅ Totalmente</td><td style="text-align:center">2,0</td></tr>
+  <tr><td>Test cases e dati di test</td><td>✅ Totalmente</td><td style="text-align:center">1,0</td></tr>
+  <tr><td>Conoscenza dominio + pseudocodice</td><td>⚠️ Parzialmente</td><td style="text-align:center">1,5</td></tr>
+  <tr><td>Codice backbone / ETL backbone</td><td>❌ No</td><td style="text-align:center">0</td></tr>
+  <tr style="background:#e8f0fe; font-weight:700"><td>Totale max riutilizzabile</td><td></td><td style="text-align:center">~11,5 gg</td></tr>
+</table>
+
+<h3>6.3 Scenari di switch per data</h3>
+<table class="table-pnr">
+  <tr><th>Data switch</th><th style="text-align:center">Riutilizzabile</th><th style="text-align:center">Effort Oracle residuo</th><th style="text-align:center">Gg calendario</th><th style="text-align:center">Gg disponibili</th><th>Margine</th></tr>
+  <tr><td>29/05 (Gate #1)</td><td style="text-align:center">~5 gg</td><td style="text-align:center">31 gg/u</td><td style="text-align:center">~23</td><td style="text-align:center">~74</td><td><span class="badge badge-green">+51 gg — molto confortevole</span></td></tr>
+  <tr><td>12/06</td><td style="text-align:center">~7 gg</td><td style="text-align:center">29 gg/u</td><td style="text-align:center">~21</td><td style="text-align:center">~66</td><td><span class="badge badge-green">+45 gg — confortevole</span></td></tr>
+  <tr style="background:#fef9e7"><td><strong>26/06 (Gate #2) — RACCOMANDATO</strong></td><td style="text-align:center">~10 gg</td><td style="text-align:center">26 gg/u</td><td style="text-align:center">~19</td><td style="text-align:center">~56</td><td><span class="badge badge-green">+37 gg — confortevole</span></td></tr>
+  <tr><td>10/07 (Gate #3)</td><td style="text-align:center">~11,5 gg</td><td style="text-align:center">24,5 gg/u</td><td style="text-align:center">~18</td><td style="text-align:center">~47</td><td><span class="badge badge-yellow">+29 gg — gestibile</span></td></tr>
+  <tr><td>22/07</td><td style="text-align:center">~11,5 gg</td><td style="text-align:center">24,5 gg/u</td><td style="text-align:center">~18</td><td style="text-align:center">~38</td><td><span class="badge badge-yellow">+20 gg — rischioso</span></td></tr>
+  <tr><td>31/07</td><td style="text-align:center">~11,5 gg</td><td style="text-align:center">24,5 gg/u</td><td style="text-align:center">~18</td><td style="text-align:center">~30</td><td><span class="badge badge-red">+12 gg — critico</span></td></tr>
+</table>
+
+<h3>6.4 Le tre soglie PNR</h3>
+
+<div style="background: #eafaf1; border: 2px solid #27ae60; border-radius: 8px; padding: 15px 20px; margin: 15px 0;">
+  <h4 style="color: #1e8449; margin-top: 0;">🟢 PNR-1: Data sicura — 29/05/2026 (Gate #1)</h4>
+  <p><strong>Margine Oracle: +51 gg (222%)</strong> — Nessun rischio. Usare se PoC rivela impedimenti strutturali.</p>
+</div>
+
+<div style="background: #fef9e7; border: 2px solid #f39c12; border-radius: 8px; padding: 15px 20px; margin: 15px 0;">
+  <h4 style="color: #7d6608; margin-top: 0;">🟡 PNR-2: Data raccomandata — 26/06/2026 (Gate #2)</h4>
+  <p><strong>Margine Oracle: +37 gg (195%)</strong> — Rischio basso. <strong>Data consigliata</strong> — miglior rapporto costi/rischi. Se team non produttivo o performance scadenti: switch qui.</p>
+</div>
+
+<div style="background: #fdedec; border: 2px solid #c0392b; border-radius: 8px; padding: 15px 20px; margin: 15px 0;">
+  <h4 style="color: #922b21; margin-top: 0;">🔴 PNR-3: Data limite assoluta — 10/07/2026 (Gate #3)</h4>
+  <p><strong>Margine Oracle: +29 gg (161%)</strong> — Rischio medio, margine ridotto da ferie agosto. Solo se GO condizionato al Gate #2 non ha funzionato. <strong>Oltre questa data: rischio Oracle inaccettabile.</strong></p>
+</div>
+
+<h3>6.5 Albero decisionale</h3>
+<div class="tree-box">14/05 — Riunioni architettura in corso
+│
+29/05 — Gate #1: backbone tecnicamente idonea?
+├── KO Bloccanti → 🔴 SWITCH ORACLE (PNR-1)
+│   └── Ripartenza: 01/06. +51 gg margine.
+├── KO Alto (≥ 2) → ⚠️ GO CONDIZIONATO
+│   └── Piano recupero + Gate #2 anticipato
+└── GO → Proseguire
+         │
+26/06 — Gate #2: team produttivo? performance OK?
+├── KO Bloccanti → 🔴 SWITCH ORACLE (PNR-2)
+│   └── Ripartenza: 29/06. +37 gg margine.
+├── KO Alto (≥ 2) → ⚠️ GO CONDIZIONATO
+│   └── Gate #3 al 10/07 — ULTIMA possibilità.
+└── GO → Decisione DEFINITIVA. Non si torna.
+         │
+10/07 — Gate #3 (solo se GO condizionato)
+├── M3 in forte ritardo → 🔴 SWITCH OBBLIGATORIO (PNR-3)
+│   └── Ripartenza: 13/07. +29 gg margine (tight).
+└── Progressi OK → Proseguire backbone. Nessun gate ulteriore.</div>
+
+<h3>6.6 Segnali di allarme settimanali</h3>
+<table>
+  <tr><th>Sett.</th><th>Data</th><th>Cosa verificare</th><th>🟢 OK</th><th>🟡 Attenzione</th><th>🔴 Critico</th></tr>
+  <tr style="background:#f0f0f0"><td>S3</td><td>14/05</td><td>Analisi + riunioni architettura</td><td colspan="3">✅ Completate — in linea</td></tr>
+  <tr><td>S4</td><td>22/05</td><td>Accessi + PoC + tavoli</td><td>PoC 2/3 + tavoli fatti</td><td>PoC 1/3</td><td>Nessun PoC</td></tr>
+  <tr style="background:#fef9e7;font-weight:700"><td>S5</td><td>29/05</td><td>Gate #1</td><td>GO</td><td>GO condizionato</td><td>STOP → Oracle</td></tr>
+  <tr><td>S6</td><td>05/06</td><td>Flusso sFTP</td><td>In sviluppo</td><td>Difficoltà</td><td>Non avviato</td></tr>
+  <tr><td>S7</td><td>12/06</td><td>sFTP infrastruttura</td><td>Pronta</td><td>In lavorazione</td><td>Non avviata</td></tr>
+  <tr><td>S8</td><td>19/06</td><td>M2</td><td>Completata</td><td>80%</td><td>&lt; 60%</td></tr>
+  <tr style="background:#fdedec;font-weight:700"><td>S9</td><td>26/06</td><td>Gate #2 — PNR</td><td>GO definitivo</td><td>GO condizionato</td><td>STOP → Oracle</td></tr>
+  <tr><td>S10</td><td>03/07</td><td>Proc. perimetro</td><td>> 50%</td><td>30–50%</td><td>&lt; 30%</td></tr>
+  <tr style="background:#fdedec;font-weight:700"><td>S11</td><td>10/07</td><td>Gate #3</td><td>Progressi</td><td>—</td><td>STOP → Oracle</td></tr>
+  <tr><td>S12</td><td>17/07</td><td>M3</td><td>Completata</td><td>80%</td><td>&lt; 60%</td></tr>
+  <tr><td>S14</td><td>31/07</td><td>M4 + UAT date fissate</td><td>Completata</td><td>Bug minori</td><td>Non funzionante</td></tr>
+  <tr><td>S19</td><td>05/09</td><td>M5 UAT</td><td>Superata</td><td>Bug P2</td><td>Bug P1</td></tr>
+  <tr><td>S20</td><td>15/09</td><td>M6 Go-Live</td><td>🚀</td><td>In corso</td><td>Problemi</td></tr>
+</table>
+
+<!-- SECTION 7 -->
+<div class="page-break"></div>
+<h2 id="sec7">7. Raccomandazioni</h2>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+  <div class="alert alert-info">
+    <strong>1. Capitalizzare le riunioni architettura</strong><br>
+    Le riunioni in corso con il team architetture sono preziose. Ottenere: accessi, documentazione, un referente per supporto tecnico nelle prime settimane.
+  </div>
+  <div class="alert alert-info">
+    <strong>2. Accessi entro il 19/05</strong><br>
+    Richiedere formalmente accessi entro il 15/05. Se non ottenuti entro il 19/05: escalation immediata.
+  </div>
+  <div class="alert alert-warning">
+    <strong>3. sFTP: non bloccare lo sviluppo</strong><br>
+    Se l'infrastruttura sFTP di CNT IT DQ non è pronta, sviluppare con caricamento manuale e sostituire dopo.
+  </div>
+  <div class="alert alert-warning">
+    <strong>4. Ferie coordinate</strong><br>
+    Almeno una risorsa disponibile nella settimana 27–31/07 (M4 pre-ferie). Date UAT fissate PRIMA di partire.
+  </div>
+  <div class="alert alert-success">
+    <strong>5. SAL settimanale</strong><br>
+    Verifica dello stato vs milestone ogni venerdì. Intercettare ritardi prima che diventino critici.
+  </div>
+  <div class="alert alert-success">
+    <strong>6. Piano B Oracle sempre pronto</strong><br>
+    Mantenere ambiente Oracle operativo per switch rapido. Non è spreco — è assicurazione.
+  </div>
+</div>
+
+<!-- SECTION 8 -->
+<h2 id="sec8">8. Confronto Sintetico: Backbone vs Oracle</h2>
+
+<table>
+  <tr><th>Dimensione</th><th style="text-align:center">Oracle</th><th style="text-align:center">Backbone</th></tr>
+  <tr><td>Effort (gg/uomo)</td><td style="text-align:center">36</td><td style="text-align:center"><strong>30</strong> (contingency inclusa)</td></tr>
+  <tr><td>Rischio tecnico</td><td style="text-align:center"><span class="badge badge-green">Basso</span></td><td style="text-align:center"><span class="badge badge-yellow">Medio</span> (inesperienza)</td></tr>
+  <tr><td>Rischio timeline</td><td style="text-align:center"><span class="badge badge-green">Basso</span></td><td style="text-align:center"><span class="badge badge-yellow">Medio</span> (mitigato dai gate)</td></tr>
+  <tr><td>Slack disponibile (su 86 gg)</td><td style="text-align:center">~50 gg</td><td style="text-align:center"><strong>~56 gg</strong></td></tr>
+  <tr><td>Competenza team</td><td style="text-align:center">Piena</td><td style="text-align:center">In acquisizione</td></tr>
+  <tr><td>Fallback possibile</td><td style="text-align:center">—</td><td style="text-align:center">Sì, entro 26/06 (raccomandato) o 10/07 (assoluto)</td></tr>
+  <tr><td>Investimento formativo</td><td style="text-align:center">Nessuno</td><td style="text-align:center">Alto (riutilizzabile per progetti futuri)</td></tr>
+  <tr><td>Efficienza a regime</td><td style="text-align:center">Baseline</td><td style="text-align:center"><strong>-17% vs Oracle</strong> (più efficiente)</td></tr>
+</table>
+
+<div class="note" style="margin-top: 30px;">
+  <strong>Conclusione:</strong> Con 30 gg di effort (contingency inclusa) su 86 gg disponibili, il progetto backbone ha un margine di 56 gg lavorativi — più ampio di Oracle. Il rischio principale non è l'effort ma l'inesperienza tecnica, mitigata dai gate GO/NO-GO. Se i PoC della settimana 18–22/05 confermano la fattibilità, il progetto backbone è <strong>la scelta più vantaggiosa</strong> anche a breve termine.
+</div>
+
+<div class="footer">
+  Piano di Progetto v2 — SellaLab Margini Clienti su Piattaforma Backbone &nbsp;|&nbsp; Effort: 30 gg/u (contingency inclusa) &nbsp;|&nbsp; 14/05/2026 &nbsp;|&nbsp; Centrico / CNT Data Management
+</div>
+
+</body>
+</html>

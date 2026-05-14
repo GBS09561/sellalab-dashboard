@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playbook Operativo v2 — SellaLab Margini Clienti — Step by Step</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  @media print {
+    .page-break { page-break-before: always; }
+    body { font-size: 9pt; }
+    .no-print { display: none; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    line-height: 1.55;
+    color: #1a1a2e;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 25px 35px;
+    background: #fff;
+  }
+  .cover { text-align: center; padding: 50px 0 40px; border-bottom: 4px solid #003366; margin-bottom: 30px; }
+  .cover h1 { font-size: 26px; color: #003366; margin-bottom: 6px; }
+  .cover .subtitle { font-size: 16px; color: #555; margin-bottom: 30px; }
+  .cover-meta { display: inline-block; text-align: left; background: #f7f9fc; border: 1px solid #d0d8e8; border-radius: 8px; padding: 15px 30px; font-size: 13px; line-height: 1.9; }
+  .cover-meta strong { color: #003366; min-width: 180px; display: inline-block; }
+
+  h2 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px; margin-top: 35px; font-size: 18px; }
+  h3 { color: #1a5276; margin-top: 25px; font-size: 15px; }
+  h4 { color: #2c3e50; margin-top: 15px; font-size: 13px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  th { background: #003366; color: #fff; padding: 7px 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #f7f9fc; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; color: #fff; }
+  .b-dev { background: #27ae60; }
+  .b-analyst { background: #2980b9; }
+  .b-both { background: #8e44ad; }
+  .b-backbone { background: #d35400; }
+  .b-stakeholder { background: #7f8c8d; }
+  .b-gate { background: #c0392b; }
+  .b-done { background: #95a5a6; }
+
+  .week-header { background: linear-gradient(135deg, #003366, #1a5276); color: #fff; padding: 10px 18px; border-radius: 8px 8px 0 0; margin-top: 25px; display: flex; justify-content: space-between; align-items: center; }
+  .week-header h3 { color: #fff; margin: 0; font-size: 14px; }
+  .week-header .dates { font-size: 12px; opacity: 0.85; }
+  .week-header-done { background: linear-gradient(135deg, #6c757d, #95a5a6); }
+  .week-body { border: 1px solid #d0d8e8; border-top: none; border-radius: 0 0 8px 8px; padding: 0; margin-bottom: 5px; }
+
+  .day-row { display: flex; border-bottom: 1px solid #e8edf2; }
+  .day-row:last-child { border-bottom: none; }
+  .day-label { width: 80px; min-width: 80px; background: #f0f4f8; padding: 8px 10px; font-weight: 700; font-size: 12px; color: #003366; border-right: 1px solid #d0d8e8; display: flex; align-items: flex-start; }
+  .day-content { flex: 1; padding: 8px 12px; }
+  .day-content .task { margin: 4px 0; font-size: 12px; }
+  .day-content .task-title { font-weight: 600; }
+  .day-content .task-detail { color: #555; font-size: 11px; margin-left: 5px; }
+
+  .output-box { background: #eafaf1; border: 1px solid #a9dfbf; border-radius: 6px; padding: 8px 14px; margin: 8px 0; font-size: 11px; }
+  .output-box strong { color: #1e8449; }
+  .risk-box { background: #fef9e7; border: 1px solid #f9e79f; border-radius: 6px; padding: 8px 14px; margin: 8px 0; font-size: 11px; }
+  .risk-box strong { color: #7d6608; }
+  .gate-box { background: #fdedec; border: 2px solid #c0392b; border-radius: 8px; padding: 12px 18px; margin: 15px 0; }
+  .gate-box h4 { color: #922b21; margin-top: 0; }
+  .decision-box { background: #eaf2f8; border: 1px solid #aed6f1; border-radius: 6px; padding: 10px 14px; margin: 8px 0; font-size: 12px; }
+
+  .milestone-banner { background: #003366; color: #fff; padding: 8px 15px; border-radius: 6px; margin: 10px 0; font-weight: 700; text-align: center; font-size: 13px; }
+  .milestone-done { background: #6c757d; }
+
+  .checklist { list-style: none; padding-left: 5px; font-size: 12px; }
+  .checklist li { padding: 2px 0; }
+  .checklist li::before { content: "☐ "; }
+
+  .note { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 12px; }
+  .warning { background: #fef9e7; border-left: 4px solid #f39c12; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 12px; }
+  .danger { background: #fdedec; border-left: 4px solid #c0392b; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 12px; }
+  .done-note { background: #f0f0f0; border-left: 4px solid #95a5a6; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 12px; color: #555; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+
+  .progress-bar { background: #e0e0e0; border-radius: 10px; height: 20px; margin: 10px 0; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, #27ae60, #2ecc71); height: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; }
+
+  .footer { text-align: center; margin-top: 40px; padding-top: 15px; border-top: 1px solid #ddd; color: #999; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>📋 Playbook Operativo v2 — Step by Step</h1>
+  <div class="subtitle">SellaLab Margini Clienti — Piattaforma Backbone</div>
+  <div class="cover-meta">
+    <strong>Progetto:</strong> 0023650 — SellaLab Centrico FrameworkPM<br>
+    <strong>Team:</strong> 🟢 Programmatore Senior (DEV) + 🔵 Analista (AN)<br>
+    <strong>Periodo:</strong> 01/05/2026 – 15/09/2026<br>
+    <strong>Effort totale backbone:</strong> 30 gg/uomo (contingency inclusa)<br>
+    <strong>Effort fallback Oracle:</strong> 36 gg/uomo<br>
+    <strong>Data redazione:</strong> 14/05/2026 — rev.2
+  </div>
+</div>
+
+<!-- STATUS BOX -->
+<div style="background: linear-gradient(135deg, #eafaf1, #d5f5e3); border: 2px solid #27ae60; border-radius: 8px; padding: 15px 20px; margin: 20px 0;">
+  <h3 style="color: #1e8449; margin-top: 0; margin-bottom: 8px;">📊 Stato progetto al 14/05/2026</h3>
+  <div class="progress-bar"><div class="progress-fill" style="width: 15%;">Fase 0 — 15%</div></div>
+  <div style="font-size: 12px; color: #333; margin-top: 8px;">
+    <strong>Completato:</strong> Raccolta requisiti iniziale, analisi funzionale avviata, stima effort completata, issue aperto su piattaforma backbone<br>
+    <strong>In corso:</strong> Riunioni con team architetture per utilizzo nuova piattaforma<br>
+    <strong>Prossimo step:</strong> Completare PoC backbone e chiudere analisi funzionale
+  </div>
+</div>
+
+<div class="note">
+  <strong>Legenda attività:</strong> 🟢 DEV = Programmatore Senior &nbsp;|&nbsp; 🔵 AN = Analista &nbsp;|&nbsp;
+  <span class="badge b-backbone">BACKBONE</span> piattaforma &nbsp;|&nbsp;
+  <span class="badge b-dev">SVILUPPO</span> codice applicativo &nbsp;|&nbsp;
+  <span class="badge b-stakeholder">STAKEHOLDER</span> riunioni &nbsp;|&nbsp;
+  <span class="badge b-gate">GATE</span> decisioni
+</div>
+
+<div class="note">
+  <strong>Effort totale: 30 gg/uomo</strong> (la contingency per inesperienza backbone è già inclusa nella stima). In caso di fallback Oracle: 36 gg/uomo. Il piano distribuisce l'effort su ~86 gg lavorativi con ampio margine.
+</div>
+
+<!-- ======================= FASE 0 — GIÀ COMPLETATA ======================= -->
+<h2>FASE 0a — RACCOLTA REQUISITI &amp; ANALISI (01/05 – 14/05) ✅ COMPLETATA</h2>
+
+<div class="done-note">
+  Questa fase è stata eseguita nelle prime due settimane. Si è dato priorità all'analisi funzionale e alla raccolta requisiti, parallelamente all'avvio delle attività sulla nuova piattaforma.
+</div>
+
+<!-- WEEK 1 - DONE -->
+<div class="week-header week-header-done">
+  <h3>SETTIMANA 1 (S1) — Avvio e Requisiti ✅</h3>
+  <span class="dates">01/05 – 02/05/2026 (festivi 01/05)</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">VEN<br>02/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🔵 AN: Avvio raccolta requisiti e documentazione progettuale</span></div>
+      <div class="task"><span class="task-detail">→ Analisi della proposta progettuale, identificazione stakeholder, primo contatto con team SellaLab</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 2 - DONE -->
+<div class="week-header week-header-done">
+  <h3>SETTIMANA 2 (S2) — Analisi Funzionale &amp; Architettura ✅</h3>
+  <span class="dates">04/05 – 09/05/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-VEN<br>04–09/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🔵 AN: Raccolta requisiti funzionali</span></div>
+      <div class="task"><span class="task-detail">→ Interviste, documentazione regole business, analisi tabelle sorgente</span></div>
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🔵🟢 ENTRAMBI: Stima effort completata</span></div>
+      <div class="task"><span class="task-detail">→ Effort backbone: 30 gg/uomo (contingency inclusa) — Effort Oracle: 36 gg/uomo</span></div>
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🟢 DEV: Apertura issue per nuova piattaforma backbone</span></div>
+      <div class="task"><span class="task-detail">→ Issue aperto, in attesa di feedback dal team architetture</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 3 - DONE/IN PROGRESS -->
+<div class="week-header week-header-done">
+  <h3>SETTIMANA 3 (S3) — Riunioni Architettura ✅ / IN CORSO</h3>
+  <span class="dates">11/05 – 15/05/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>11–14/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🟢 DEV: Riunioni con team architetture</span></div>
+      <div class="task"><span class="task-detail">→ Sessioni di approfondimento su piattaforma backbone: architettura, capabilities, modello dati, strumenti di sviluppo</span></div>
+      <div class="task"><span class="badge b-done">FATTO</span> <span class="task-title">🔵 AN: Prosecuzione analisi funzionale</span></div>
+      <div class="task"><span class="task-detail">→ Dettaglio regole perimetro, mappatura tabelle margine, bozza tracciati</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>14–15/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Richiedere accessi ambiente dev backbone</span></div>
+      <div class="task"><span class="task-detail">→ Sulla base delle riunioni architetturali, formalizzare la richiesta accessi (dev, repo, DB, documentazione). Se il team architetture può fornirli direttamente, meglio.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Organizzare kick-off formale con SellaLab</span></div>
+      <div class="task"><span class="task-detail">→ Convocare Marino Giuseppe, Petrazzi Marco, Barbara Salucci per la settimana prossima. Agenda: presentazione scope, raccolta requisiti dettagliati, pianificazione tavoli di lavoro.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="output-box">
+  <strong>✅ Output a fine S3 (15/05):</strong><br>
+  • Stima effort validata (30 gg backbone / 36 gg Oracle)<br>
+  • Issue piattaforma aperto + riunioni architettura completate<br>
+  • Richiesta accessi backbone formalizzata<br>
+  • Analisi funzionale avanzata (~60%)<br>
+  • Kick-off SellaLab pianificato
+</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= FASE 0b — PoC BACKBONE ======================= -->
+<h2>FASE 0b — PoC BACKBONE &amp; COMPLETAMENTO ANALISI (18/05 – 29/05)</h2>
+
+<div class="warning">
+  <strong>⚠️ Fase critica:</strong> Il PoC backbone e la chiusura dell'analisi funzionale devono procedere in parallelo. Il DEV si concentra sui PoC tecnici, l'AN chiude l'analisi con gli stakeholder. Obiettivo: arrivare al GATE #1 (29/05) con tutti gli elementi per decidere.
+</div>
+
+<!-- WEEK 4 -->
+<div class="week-header">
+  <h3>SETTIMANA 4 (S4) — PoC Backbone + Tavoli Stakeholder</h3>
+  <span class="dates">18/05 – 22/05/2026</span>
+</div>
+<div class="week-body">
+
+  <div class="day-row">
+    <div class="day-label">LUN<br>18/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Verificare accessi + setup ambiente</span></div>
+      <div class="task"><span class="task-detail">→ <strong>Se accessi attivi:</strong> installare IDE, configurare connessioni, verificare l'accesso all'ambiente dev. <strong>Se non attivi:</strong> escalation immediata al team architetture/PM. Ogni giorno di ritardo qui si paga doppio dopo.</span></div>
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Kick-off formale con Team SellaLab</span></div>
+      <div class="task"><span class="task-detail">→ Eseguire il meeting. Obiettivi: confermare scope, raccogliere requisiti dettagliati, concordare tavoli di lavoro specifici (Barbara Salucci per regole perimetro, Team per marginalità). <strong>Fissare tavolo con Barbara entro mercoledì.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MAR<br>19/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: PoC #1 — Creazione tabella + operazioni base</span></div>
+      <div class="task"><span class="task-detail">→ Creare una tabella di test (es. "TEST_CONTATTI_SL" con colonne: id, nome, cognome, email, data_contatto, flag). Verificare DDL, INSERT, UPDATE, DELETE. Verificare che le colonne si vedono e si modificano.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Redazione minute kick-off + lista domande</span></div>
+      <div class="task"><span class="task-detail">→ Documentare formalmente quanto emerso dal kick-off. Preparare lista domande per Barbara Salucci (regole perimetro, esclusioni, definizione "cliente").</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MER<br>20/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: PoC #2 — Procedura con logica</span></div>
+      <div class="task"><span class="task-detail">→ Scrivere una procedura che: inserisce 10 record, li legge con SELECT, aggiorna con UPDATE, verifica con IF/ELSE. Testare: loops (FOR/WHILE), cursori, gestione errori (TRY/CATCH o equivalente), COMMIT/ROLLBACK. <strong>Documentare differenze rispetto a PL/SQL Oracle.</strong></span></div>
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Tavolo #1 con Barbara Salucci — Regole perimetro</span></div>
+      <div class="task"><span class="task-detail">→ Definire: come si identifica un contatto privato (email → ID soggetto), come si identifica un'azienda (P.IVA → ID soggetto), regola dei 6 mesi, definizione "diventato cliente", regole di esclusione (dipendenti gruppo, società gruppo). <strong>Uscire con regole scritte e validate.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">GIO<br>21/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: PoC #3 — Lettura cross-schema (CRITICO)</span></div>
+      <div class="task"><span class="task-detail">→ <strong>Questo è il test più importante.</strong> Da backbone, provare a leggere una tabella dal datamart CoGe (es. tabella margine interesse). Se non funziona: provare con grant/sinonimi. Se ancora non funziona: <strong>potenziale blocker architetturale — segnalare SUBITO.</strong></span></div>
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Tavolo #2 con Team SellaLab — Marginalità</span></div>
+      <div class="task"><span class="task-detail">→ Definire: quali voci di margine servono (impieghi, raccolta, ricavi per voce), da quali tabelle si leggono, logica di aggregazione, trattamento anno corrente vs precedente. <strong>Uscire con mappatura voci → tabelle sorgente.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">VEN<br>22/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Report fattibilità tecnica PoC</span></div>
+      <div class="task"><span class="task-detail">→ Scrivere report: cosa funziona, cosa no, velocità sviluppo vs Oracle, problemi emersi, domande aperte. Include: valutazione ETL/scheduling/sFTP (informazioni raccolte nelle riunioni architettura).</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Definizione data model + bozza tracciati sFTP</span></div>
+      <div class="task"><span class="task-detail">→ Disegnare schema tabelle: contatti (privati + aziende), perimetro (con flag cliente), margini. Definire formato tracciati CSV. Avviare richiesta infrastruttura sFTP a CNT IT DQ (Dario Bertodo).</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="output-box">
+  <strong>✅ Output attesi fine S4:</strong><br>
+  • PoC #1 (tabella) ✓/✗ — PoC #2 (procedura) ✓/✗ — PoC #3 (cross-schema) ✓/✗<br>
+  • Report fattibilità tecnica backbone con valutazione ETL/scheduling<br>
+  • Regole perimetro validate con Barbara Salucci<br>
+  • Mappatura voci margine → tabelle sorgente<br>
+  • Data model definito + bozza tracciati sFTP<br>
+  • Richiesta infrastruttura sFTP inviata a Dario Bertodo
+</div>
+
+<div class="danger">
+  <strong>🔴 ALERT:</strong> Se il PoC #3 (cross-schema) è fallito, segnalare <strong>immediatamente</strong> al PM. Non aspettare il Gate #1 — iniziare a investigare soluzioni alternative subito.
+</div>
+
+<!-- WEEK 5 -->
+<div class="week-header">
+  <h3>SETTIMANA 5 (S5) — Chiusura Analisi e GATE #1</h3>
+  <span class="dates">25/05 – 29/05/2026</span>
+</div>
+<div class="week-body">
+
+  <div class="day-row">
+    <div class="day-label">LUN<br>25/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Finalizzazione analisi funzionale v1.0</span></div>
+      <div class="task"><span class="task-detail">→ Completare tutte le sezioni: scope, perimetro, regole, tabelle sorgente, formato tracciati, data model, flusso end-to-end. Includere regole validate da Barbara Salucci e mappatura margini da Team SellaLab.</span></div>
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Disegno architettura backbone definitivo</span></div>
+      <div class="task"><span class="task-detail">→ Finalizzare: diagramma componenti, flusso dati, strategia ETL scelta, piano schedulazione, integrazione sFTP, matrice rischi tecnici.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MAR<br>26/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Review incrociata DEV ↔ AN</span></div>
+      <div class="task"><span class="task-detail">→ Verificare coerenza tra analisi funzionale e architettura tecnica. Risolvere gap. Controllare che ogni requisito funzionale ha un corrispettivo nel disegno tecnico.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MER<br>27/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Invio documenti al PM Centrico per review</span></div>
+      <div class="task"><span class="task-detail">→ Inviare a Gaetano Stomboli: analisi funzionale v1.0 + disegno architettura + report PoC + matrice rischi. Chiedere review entro giovedì.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">GIO<br>28/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Recepimento feedback + preparazione Gate #1</span></div>
+      <div class="task"><span class="task-detail">→ Integrare feedback PM. Preparare presentazione Gate #1: stato PoC, architettura, rischi, raccomandazione GO/NO-GO. Compilare la checklist Gate #1.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">VEN<br>29/05</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-gate">GATE</span> <span class="task-title">🟢🔵 + PM: GATE #1 — GO/NO-GO backbone</span></div>
+      <div class="task"><span class="task-detail">→ Riunione formale. Valutare tutti i 7 criteri della checklist. Decisione verbalizzata. Se GO: approvare analisi e avviare sviluppo. Se NO-GO: switch a Oracle (36 gg effort, ~74 gg lavorativi rimasti = ampio margine).</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M1 — 29/05/2026 — Analisi e Architettura completata + GATE #1</div>
+
+<div class="gate-box">
+  <h4>🔴 GATE #1 — Decisione del 29/05/2026</h4>
+  <p>Compilare la checklist:</p>
+  <ul class="checklist">
+    <li><strong>[Bloccante]</strong> PoC completati (3/3)?</li>
+    <li><strong>[Bloccante]</strong> Logica procedurale supportata?</li>
+    <li><strong>[Bloccante]</strong> Lettura cross-schema CoGe OK?</li>
+    <li><strong>[Alto]</strong> ETL/scheduling identificato?</li>
+    <li><strong>[Alto]</strong> sFTP fattibile?</li>
+    <li><strong>[Alto]</strong> Velocità sviluppo ragionevole vs Oracle?</li>
+    <li><strong>[Medio]</strong> Team fiducioso?</li>
+  </ul>
+  <div class="two-col">
+    <div class="output-box"><strong>✅ GO →</strong> Proseguire con Fase 2. Avvio sviluppo flusso sFTP lunedì 01/06.</div>
+    <div class="danger"><strong>🔴 STOP →</strong> Switch a Oracle. Ripartenza lunedì 01/06. ~74 gg lavorativi rimasti, 36 gg effort = ampio margine.</div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= FASE 2 — INGESTION ======================= -->
+<h2>FASE 2 — INGESTION DATI (01/06 – 19/06)</h2>
+
+<!-- WEEK 6 -->
+<div class="week-header">
+  <h3>SETTIMANA 6 (S6) — Sviluppo sFTP e Tabelle</h3>
+  <span class="dates">01/06 – 05/06/2026</span>
+</div>
+<div class="week-body">
+
+  <div class="day-row">
+    <div class="day-label">LUN<br>01/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Creazione tabelle contatti su backbone</span></div>
+      <div class="task"><span class="task-detail">→ Tabella contatti privati (id, nome, cognome, email, data_primo_contatto, note, data_caricamento, flag_elaborato). Tabella contatti aziende (id, nome_azienda, partita_iva, data_primo_contatto, data_caricamento, flag_elaborato). Creare indici su email e P.IVA.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Follow-up richiesta infrastruttura sFTP</span></div>
+      <div class="task"><span class="task-detail">→ Verificare stato richiesta con Dario Bertodo (CNT IT DQ): cartelle rilocabili, acronimo 3 lettere, codice ABI fittizio. Se non ancora avviata: inviare formalmente OGGI. <strong>Ogni giorno di ritardo si paga in S8.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MAR-MER<br>02–03/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Procedura parsing tracciato privati</span></div>
+      <div class="task"><span class="task-detail">→ Leggere file CSV, parsare (split separatore), validare campi (email valida, data formato corretto, campi obbligatori). Inserire in tabella contatti. Gestire: righe duplicate, righe con errori (log in tabella scarti).</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Predisposizione dati di test</span></div>
+      <div class="task"><span class="task-detail">→ Chiedere a SellaLab un campione di almeno 100 contatti privati e 50 aziende (anonimizzati se necessario). Se non disponibili, creare dati sintetici realistici.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>04–05/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Procedura parsing tracciato aziende</span></div>
+      <div class="task"><span class="task-detail">→ Parsing P.IVA, nome azienda, data primo contatto. Validazione P.IVA (11 cifre, check digit). Log scarti.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Definizione regole data quality</span></div>
+      <div class="task"><span class="task-detail">→ Documentare controlli DQ: duplicati (stessa email/P.IVA), formati errati, campi obbligatori, date future, caratteri speciali. Per ogni controllo: regola, severità (errore/warning), azione (scarto/log).</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 7 -->
+<div class="week-header">
+  <h3>SETTIMANA 7 (S7) — sFTP e Controlli DQ</h3>
+  <span class="dates">08/06 – 12/06/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MAR<br>08–09/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Configurazione flusso sFTP</span></div>
+      <div class="task"><span class="task-detail">→ Se infrastruttura CNT IT DQ pronta: configurare cartelle, permessi, naming convention. Se <strong>non pronta</strong>: sviluppare caricamento manuale (upload file → tabella) da sostituire con sFTP dopo. Non bloccare lo sviluppo.</span></div>
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Procedura controlli data quality</span></div>
+      <div class="task"><span class="task-detail">→ Implementare DQ: check duplicati, formati, completezza. Output: tabella log errori per record. Statistiche: % record OK, % scarti, tipologia errori.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Preparazione test cases flusso ingestion</span></div>
+      <div class="task"><span class="task-detail">→ Test cases: TC01 file valido 100 record, TC02 file con duplicati, TC03 campi mancanti, TC04 file vuoto, TC05 file 10.000 record (performance), TC06 doppio caricamento stesso file.</span></div>
+    </div>
+  </div>
+
+  <div class="day-row">
+    <div class="day-label">MER-VEN<br>10–12/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Integrazione sFTP + parsing + DQ</span></div>
+      <div class="task"><span class="task-detail">→ Collegare i tre componenti: file sFTP → parsing → controlli DQ → record validi in tabella contatti → scarti in tabella log. Test su file di esempio.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Follow-up sFTP + preparazione test</span></div>
+      <div class="task"><span class="task-detail">→ Verificare stato infrastruttura con Dario Bertodo. Se in ritardo: escalation al PM.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 8 -->
+<div class="week-header">
+  <h3>SETTIMANA 8 (S8) — Test e Chiusura M2</h3>
+  <span class="dates">15/06 – 19/06/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>15–17/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢🔵 ENTRAMBI: Esecuzione test end-to-end ingestion</span></div>
+      <div class="task"><span class="task-detail">→ Eseguire tutti i test cases. Per ogni test: documentare risultato, evidenze, difetti. Il DEV corregge i bug, l'AN re-testa.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>18–19/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Bug fixing + test performance</span></div>
+      <div class="task"><span class="task-detail">→ Correggere bug. Test performance: caricamento 10.000 record, obiettivo ≤ 5 minuti.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Report test M2</span></div>
+      <div class="task"><span class="task-detail">→ Report test con risultati, performance, evidenze per il Gate #2.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M2 — 19/06/2026 — Flusso Ingestion Operativo</div>
+
+<!-- WEEK 9 - Gate #2 -->
+<div class="week-header">
+  <h3>SETTIMANA 9 (S9) — Assessment e GATE #2</h3>
+  <span class="dates">22/06 – 26/06/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>22–24/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Anticipo M3 — Inizio modulo matching</span></div>
+      <div class="task"><span class="task-detail">→ Non aspettare il gate: avviare sviluppo matching email → ID soggetto. Questo anticipo fornisce informazioni preziose sulla velocità di sviluppo per il Gate #2.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Assessment piattaforma</span></div>
+      <div class="task"><span class="task-detail">→ Compilare questionario Gate #2: produttività team, problemi emersi, performance, slittamenti. Raccogliere feedback DEV. Preparare presentazione.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO<br>25/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Preparazione Gate #2</span></div>
+      <div class="task"><span class="task-detail">→ Consolidare: report M2, assessment produttività, stato dipendenze esterne, proiezione tempi M3.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">VEN<br>26/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-gate">GATE</span> <span class="task-title">🟢🔵 + PM: GATE #2 — POINT OF NO RETURN</span></div>
+      <div class="task"><span class="task-detail">→ Riunione formale. <strong>Decisione più importante del progetto.</strong> Se GO: nessun ritorno, focus totale backbone. Se NO-GO: switch a Oracle con ~56 gg lavorativi rimasti e 36 gg effort = margine di 20 gg.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="gate-box">
+  <h4>🔴 GATE #2 — POINT OF NO RETURN — 26/06/2026</h4>
+  <ul class="checklist">
+    <li><strong>[Bloccante]</strong> Flusso sFTP end-to-end funzionante?</li>
+    <li><strong>[Bloccante]</strong> No impedimenti tecnici strutturali?</li>
+    <li><strong>[Alto]</strong> Performance OK (≤ 5 min per 10k record)?</li>
+    <li><strong>[Alto]</strong> Velocità sviluppo accettabile?</li>
+    <li><strong>[Alto]</strong> Slittamento ≤ 3 gg?</li>
+    <li><strong>[Medio]</strong> Team fiducioso per M3?</li>
+    <li><strong>[Medio]</strong> Dipendenze gestibili?</li>
+  </ul>
+  <div class="two-col">
+    <div class="output-box"><strong>✅ GO definitivo →</strong> Proseguire backbone. Nessun ritorno. Focus totale su M3.</div>
+    <div class="danger"><strong>🔴 STOP →</strong> Switch Oracle. Ripartenza 29/06. 36 gg/u effort, ~56 gg lavorativi = margine +20 gg.</div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= FASE 3 — CORE DEV ======================= -->
+<h2>FASE 3 — SVILUPPO CORE (29/06 – 17/07)</h2>
+
+<div class="warning">
+  <strong>⚠️ Fase più critica del progetto.</strong> Le procedure di perimetro e margini sono il cuore. Il DEV lavora full time sullo sviluppo, l'AN full time sui test in parallelo.
+</div>
+
+<!-- WEEK 10 -->
+<div class="week-header">
+  <h3>SETTIMANA 10 (S10) — Perimetro Clienti</h3>
+  <span class="dates">29/06 – 03/07/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MAR<br>29–30/06</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Modulo matching email → ID soggetto (privati)</span></div>
+      <div class="task"><span class="task-detail">→ Per ogni email nei contatti privati cercare l'ID soggetto nel datamart. Match esatto su email normalizzata (trim, lowercase). Log non-match con motivo. Gestire: email multipla per stesso soggetto, soggetto con più email.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Preparazione "golden dataset" per validazione</span></div>
+      <div class="task"><span class="task-detail">→ Su Oracle/datamart CoGe, estrarre manualmente per 50 contatti noti: ID soggetto, ID conto, stato cliente, data primo contatto, margine. Questo è il set di riferimento per validare le procedure backbone.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">MER-GIO<br>01–02/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Matching P.IVA → ID soggetto (aziende) + attribuzione ID conto</span></div>
+      <div class="task"><span class="task-detail">→ Match esatto su P.IVA. Gestire P.IVA cessata. Per ogni ID soggetto trovato, recuperare tutti i conti attivi (escludere chiusi).</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">VEN<br>03/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Regole esclusione + logica 6 mesi</span></div>
+      <div class="task"><span class="task-detail">→ Esclusione dipendenti gruppo (join anagrafica), esclusione società gruppo (lista parametrizzata). Flag_cliente = 'SI' se data_apertura_primo_prodotto ≤ data_primo_contatto + 6 mesi.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Test modulo matching (primi risultati)</span></div>
+      <div class="task"><span class="task-detail">→ Matching su campione vs golden dataset. Calcolare: tasso match, falsi positivi, non-match. Obiettivo: ≥ 90%.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 11 -->
+<div class="week-header">
+  <h3>SETTIMANA 11 (S11) — Taggatura e Margini (inizio)</h3>
+  <span class="dates">06/07 – 10/07/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>06–08/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Taggatura incrementale + recupero pregresso + tabella perimetro</span></div>
+      <div class="task"><span class="task-detail">→ UPSERT (non DELETE+INSERT): una volta taggato, il cliente mantiene lo status. Caricare storico dal 2013. Tabella perimetro: ID soggetto, ID conto, ABI, data primo contatto, data apertura primo prodotto, flag_cliente, data_taggatura. <strong>Testare: esecuzioni ripetute non duplicano record.</strong></span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Test procedura perimetro completa</span></div>
+      <div class="task"><span class="task-detail">→ Procedura completa su campione test. Confrontare con golden dataset. Verificare esclusioni, flag cliente, coerenza storico.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>09–10/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Bug fixing perimetro + inizio procedura margine impieghi</span></div>
+      <div class="task"><span class="task-detail">→ Correggere bug test. Iniziare lettura margine impieghi per soggetti nel perimetro.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 12 -->
+<div class="week-header">
+  <h3>SETTIMANA 12 (S12) — Procedure Margini</h3>
+  <span class="dates">13/07 – 17/07/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>13–15/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Margine impieghi + margine raccolta</span></div>
+      <div class="task"><span class="task-detail">→ Per ogni soggetto/conto nel perimetro: margine impieghi da Banca Sella, margine raccolta da Banca Sella + Banca Patrimoni. Aggregare per soggetto. Gestire: conti senza margine (=0), conti multi-ABI.</span></div>
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Ricavi dettagliati per voce</span></div>
+      <div class="task"><span class="task-detail">→ Singole voci di ricavo dalla tabella CE per il perimetro. Mantenere dettaglio per voce.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Test margini (progressivo)</span></div>
+      <div class="task"><span class="task-detail">→ Confrontare margini calcolati con golden dataset Oracle. Quadratura obiettivo: ± 1%.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>16–17/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Logica anno corrente vs anno precedente + tabella margini</span></div>
+      <div class="task"><span class="task-detail">→ Per ogni voce: dato mese corrente + dato stesso mese anno precedente. Popolare tabella margini finale su datamart CoGe.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Test completo procedure core</span></div>
+      <div class="task"><span class="task-detail">→ Test di regressione su almeno 3 mesi. Quadratura con dati Oracle. Report test M3.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M3 — 17/07/2026 — Procedure Core Operative</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= FASE 4 — AUTOMAZIONE ======================= -->
+<h2>FASE 4 — AUTOMAZIONE &amp; PIPELINE (20/07 – 31/07)</h2>
+
+<!-- WEEK 13 -->
+<div class="week-header">
+  <h3>SETTIMANA 13 (S13) — ETL e Controlli</h3>
+  <span class="dates">20/07 – 24/07/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>20–22/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Procedura controlli</span></div>
+      <div class="task"><span class="task-detail">→ Controllo completezza (tutti i soggetti hanno margine?), coerenza (margine totale = impieghi + raccolta?), andamentale (variazione > 20% vs mese precedente → warning). Output: report conteggi e anomalie.</span></div>
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Pipeline ETL backbone</span></div>
+      <div class="task"><span class="task-detail">→ Orchestrare gli step in sequenza: 1) caricamento sFTP → 2) parsing → 3) DQ → 4) perimetro → 5) margini → 6) controlli → 7) output. Dipendenze: ogni step dipende dal successo del precedente. Retry in caso di errore.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO-VEN<br>23–24/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Test integrazione pipeline completa</span></div>
+      <div class="task"><span class="task-detail">→ Eseguire pipeline su un mese storico. Verificare sequenza step, risultati coerenti. Documentare tempi di esecuzione.</span></div>
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Bug fixing pipeline</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 14 -->
+<div class="week-header">
+  <h3>SETTIMANA 14 (S14) — Schedulazione e Chiusura M4</h3>
+  <span class="dates">27/07 – 31/07/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MAR<br>27–28/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Schedulazione + alerting</span></div>
+      <div class="task"><span class="task-detail">→ Configurare job mensile: data/ora esecuzione, notifica email errore, log esecuzione. Testare esecuzione automatica.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Template output Excel + runbook operativo</span></div>
+      <div class="task"><span class="task-detail">→ Preparare file Excel template per invio a SellaLab. Scrivere runbook: come monitorare il job, cosa fare se fallisce, come rieseguire manualmente.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">MER-VEN<br>29–31/07</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢🔵 ENTRAMBI: Test integrazione su 3 mesi storici</span></div>
+      <div class="task"><span class="task-detail">→ Pipeline completa su 3 mesi consecutivi. Verificare coerenza dati e correttezza anno precedente. Questo è il test finale pre-ferie.</span></div>
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Concordare date UAT con Team SellaLab</span></div>
+      <div class="task"><span class="task-detail">→ <strong>PRIMA DELLE FERIE:</strong> inviare convocazione UAT per settimana 25–29/08. Confermare disponibilità Marino Giuseppe e Petrazzi Marco.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M4 — 31/07/2026 — Pipeline Automatizzata Completa</div>
+
+<div class="warning">
+  <strong>⚠️ CHECKLIST PRE-FERIE (entro il 31/07 o 07/08 al più tardi):</strong><br>
+  • Pipeline funzionante end-to-end con 3 run storici OK<br>
+  • Date UAT confermate con SellaLab<br>
+  • Runbook operativo scritto<br>
+  • Nessun bug bloccante aperto<br>
+  • Template output pronto
+</div>
+
+<!-- BUFFER -->
+<div class="week-header">
+  <h3>SETTIMANA 15 (S15) — Buffer &amp; Stabilizzazione</h3>
+  <span class="dates">03/08 – 07/08/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-VEN<br>03–07/08</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢🔵 Settimana buffer</span></div>
+      <div class="task"><span class="task-detail">→ <strong>Se tutto in orario:</strong> ottimizzazioni, test aggiuntivi, documentazione, dry-run deploy in ambiente pre-produzione.<br><strong>Se in ritardo:</strong> completamento attività M4 pendenti. Questa settimana assorbe fino a 5 gg di slittamento.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FERIE -->
+<div style="background: #f0f0f0; border: 2px dashed #999; border-radius: 8px; padding: 15px 20px; margin: 20px 0; text-align: center;">
+  <h3 style="color: #666; margin-top: 0;">🏖️ FERIE ESTIVE — 10/08 – 21/08/2026</h3>
+  <p style="color: #888; font-size: 12px;">Coordinare ferie tra DEV e AN. Evitare sovrapposizione totale nella settimana 03–07/08 (buffer/stabilizzazione).</p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= FASE 5 — UAT ======================= -->
+<h2>FASE 5 — TEST &amp; UAT (24/08 – 05/09)</h2>
+
+<div class="week-header">
+  <h3>SETTIMANA 18 (S18) — Preparazione UAT</h3>
+  <span class="dates">24/08 – 29/08/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN<br>24/08</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Rientro ferie: verifica stato sistema</span></div>
+      <div class="task"><span class="task-detail">→ Verificare ambiente funzionante, run rapido pipeline, nessun problema infrastrutturale emerso durante ferie.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">MAR-MER<br>25–26/08</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Preparazione ambiente UAT + run su dati reali</span></div>
+      <div class="task"><span class="task-detail">→ Caricare dati reali (ultimi 3 mesi), configurare accessi utenti SellaLab. Eseguire pipeline completa — questo sarà il dato presentato al cliente.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Preparazione sessione UAT</span></div>
+      <div class="task"><span class="task-detail">→ Presentazione demo, scenari test per cliente, template raccolta feedback/difetti.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO<br>27/08</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🟢🔵 Demo/walkthrough con Team SellaLab</span></div>
+      <div class="task"><span class="task-detail">→ Presentare flusso end-to-end, tabelle, dati di esempio, output. Primo feedback. Concordare piano test UAT.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">VEN<br>28/08</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Supporto UAT — giorno 1</span></div>
+      <div class="task"><span class="task-detail">→ Cliente esegue test. AN assiste, raccoglie difetti. DEV disponibile per fix rapidi.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 19 -->
+<div class="week-header">
+  <h3>SETTIMANA 19 (S19) — UAT e Bug Fixing</h3>
+  <span class="dates">01/09 – 05/09/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN-MER<br>01–03/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Bug fixing (P1 prima, poi P2/P3)</span></div>
+      <div class="task"><span class="task-detail">→ Prioritizzare bloccanti. Per ogni fix: implementare, testare, notificare AN per re-test.</span></div>
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🔵 AN: Supporto UAT continuo + re-test</span></div>
+      <div class="task"><span class="task-detail">→ Supporto UAT, re-test bug fixati, aggiornamento report difetti.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO<br>04/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Prima estrazione reale dati mese corrente</span></div>
+      <div class="task"><span class="task-detail">→ Run completo con dati mese corrente. Output nel formato concordato (Excel). Verifica dati.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Report UAT finale</span></div>
+      <div class="task"><span class="task-detail">→ Lista difetti con stato, risultati test, quadratura dati, raccomandazione go-live.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">VEN<br>05/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-stakeholder">STAKEHOLDER</span> <span class="task-title">🟢🔵 Raccolta approvazione UAT formale</span></div>
+      <div class="task"><span class="task-detail">→ Inviare report a Marino Giuseppe / Petrazzi Marco. Richiedere approvazione formale. Se P2 aperti: concordare risoluzione post go-live.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M5 — 05/09/2026 — UAT Superata</div>
+
+<!-- ======================= FASE 6 — GO-LIVE ======================= -->
+<h2>FASE 6 — GO-LIVE (08/09 – 15/09)</h2>
+
+<div class="week-header">
+  <h3>SETTIMANA 20 (S20) — Deploy e Go-Live</h3>
+  <span class="dates">08/09 – 15/09/2026</span>
+</div>
+<div class="week-body">
+  <div class="day-row">
+    <div class="day-label">LUN<br>08/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Deploy su ambiente produzione</span></div>
+      <div class="task"><span class="task-detail">→ Deployare tutti gli artefatti: tabelle, procedure, ETL, scheduler. Seguire procedura di deploy backbone. Verifica post-deploy.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">MAR<br>09/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-backbone">BACKBONE</span> <span class="task-title">🟢 DEV: Configurazione scheduler produzione</span></div>
+      <div class="task"><span class="task-detail">→ Attivare job schedulato in produzione. Configurare notifiche email. Verificare job visibile e monitorabile.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Abilitazioni utenti su datamart CoGe</span></div>
+      <div class="task"><span class="task-detail">→ Configurare abilitazioni lettura per utenti specifici. Verificare con utente di test.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">MER<br>10/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-dev">SVILUPPO</span> <span class="task-title">🟢 DEV: Primo run mensile reale in produzione</span></div>
+      <div class="task"><span class="task-detail">→ Run completo in produzione. Monitorare ogni step. Verificare coerenza con UAT. Fix immediato se errori.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">GIO<br>11/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Validazione output con il cliente</span></div>
+      <div class="task"><span class="task-detail">→ Inviare primo output reale a SellaLab. Chiedere conferma correttezza. Fix immediato se problemi.</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">VEN<br>12/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Invio prima estrazione a CRM SellaLab</span></div>
+      <div class="task"><span class="task-detail">→ Inviare file Excel al CRM SellaLab (o via sFTP). Confermare ricezione.</span></div>
+      <div class="task"><span class="badge b-analyst">ANALISI</span> <span class="task-title">🔵 AN: Documentazione handover</span></div>
+      <div class="task"><span class="task-detail">→ Consegnare: runbook operativo, documentazione tecnica, lista contatti supporto, piano evolutive future (Sella Leasing, Fabrick).</span></div>
+    </div>
+  </div>
+  <div class="day-row">
+    <div class="day-label">LUN<br>15/09</div>
+    <div class="day-content">
+      <div class="task"><span class="badge b-both">ENTRAMBI</span> <span class="task-title">🟢🔵 Chiusura formale progetto</span></div>
+      <div class="task"><span class="task-detail">→ Verificare: scheduler attivo, prima estrazione consegnata, documentazione completa. Comunicazione formale al PM Centrico e al cliente.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="milestone-banner">◆ MILESTONE M6 — 15/09/2026 — 🚀 GO-LIVE</div>
+
+<div class="page-break"></div>
+
+<!-- ======================= RIEPILOGO ======================= -->
+<h2>Riepilogo: Effort e Date Chiave</h2>
+
+<div class="note">
+  <strong>Effort totale: 30 gg/uomo</strong> (contingency già inclusa). Distribuzione stimata:
+</div>
+
+<table>
+  <tr><th>Fase</th><th>Periodo</th><th>Effort DEV (gg)</th><th>Effort AN (gg)</th><th>Totale (gg)</th></tr>
+  <tr><td>F0a — Requisiti &amp; Analisi</td><td>01/05 – 14/05</td><td>2</td><td>5</td><td>7</td></tr>
+  <tr><td>F0b — PoC + Chiusura Analisi</td><td>18/05 – 29/05</td><td>5</td><td>3</td><td>8</td></tr>
+  <tr style="background:#eafaf1"><td><strong>Subtotale pre-GATE #1</strong></td><td></td><td><strong>7</strong></td><td><strong>8</strong></td><td><strong>15</strong></td></tr>
+  <tr><td>F2 — Ingestion</td><td>01/06 – 19/06</td><td>8</td><td>3</td><td>11</td></tr>
+  <tr><td>F3 — Core Dev</td><td>29/06 – 17/07</td><td>12</td><td>4</td><td>16</td></tr>
+  <tr><td>F4 — Automazione</td><td>20/07 – 31/07</td><td>5</td><td>3</td><td>8</td></tr>
+  <tr><td>F5 — UAT</td><td>24/08 – 05/09</td><td>4</td><td>5</td><td>9</td></tr>
+  <tr><td>F6 — Go-Live</td><td>08/09 – 15/09</td><td>3</td><td>2</td><td>5</td></tr>
+  <tr style="background:#fdedec"><td><strong>TOTALE</strong></td><td></td><td colspan="3"><strong>~30 gg/u effort su ~86 gg lavorativi → margine significativo</strong></td></tr>
+</table>
+
+<h2>Timeline: Azioni Chiave per Data</h2>
+
+<table>
+  <tr><th>Data</th><th>Azione chiave</th><th>Chi</th><th>Tipo</th></tr>
+  <tr style="background:#f0f0f0"><td><s>01–14/05</s></td><td>✅ Raccolta requisiti, analisi funzionale, stima effort, riunioni architettura</td><td>Entrambi</td><td><span class="badge b-done">FATTO</span></td></tr>
+  <tr><td>14–15/05</td><td>Formalizzare richiesta accessi backbone + convocare kick-off SellaLab</td><td>🟢+🔵</td><td><span class="badge b-backbone">BACKBONE</span></td></tr>
+  <tr><td>18/05</td><td>Kick-off formale SellaLab + Inizio PoC backbone</td><td>🔵 AN / 🟢 DEV</td><td><span class="badge b-stakeholder">STAKEHOLDER</span></td></tr>
+  <tr><td>20–21/05</td><td>Tavoli con Barbara Salucci + Team SellaLab</td><td>🔵 AN</td><td><span class="badge b-stakeholder">STAKEHOLDER</span></td></tr>
+  <tr><td>21/05</td><td>⚠️ PoC #3 cross-schema — test critico</td><td>🟢 DEV</td><td><span class="badge b-backbone">BACKBONE</span></td></tr>
+  <tr><td>22/05</td><td>Avviare richiesta infrastruttura sFTP (Dario Bertodo)</td><td>🔵 AN</td><td><span class="badge b-backbone">BACKBONE</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>29/05</strong></td><td>◆ M1 + 🔴 GATE #1 — GO/NO-GO backbone</td><td>Entrambi + PM</td><td><span class="badge b-gate">GATE</span></td></tr>
+  <tr><td>01/06</td><td>Inizio sviluppo flusso ingestion</td><td>🟢 DEV</td><td><span class="badge b-dev">SVILUPPO</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>19/06</strong></td><td>◆ M2 — Flusso Ingestion operativo</td><td>Entrambi</td><td><span class="badge b-gate">MILESTONE</span></td></tr>
+  <tr style="background:#fdedec"><td><strong>26/06</strong></td><td>🔴 GATE #2 — POINT OF NO RETURN</td><td>Entrambi + PM</td><td><span class="badge b-gate">GATE</span></td></tr>
+  <tr><td>29/06–17/07</td><td>Sviluppo procedure perimetro + margini</td><td>🟢 DEV</td><td><span class="badge b-dev">SVILUPPO</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>17/07</strong></td><td>◆ M3 — Procedure Core operative</td><td>Entrambi</td><td><span class="badge b-gate">MILESTONE</span></td></tr>
+  <tr><td>20/07–31/07</td><td>ETL + controlli + schedulazione</td><td>🟢 DEV</td><td><span class="badge b-backbone">BACKBONE</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>31/07</strong></td><td>◆ M4 — Pipeline Automatizzata</td><td>Entrambi</td><td><span class="badge b-gate">MILESTONE</span></td></tr>
+  <tr style="background:#fef9e7"><td>Entro 31/07</td><td>⚠️ Concordare date UAT con SellaLab (PRIMA ferie)</td><td>🔵 AN</td><td><span class="badge b-stakeholder">STAKEHOLDER</span></td></tr>
+  <tr><td>03–07/08</td><td>Buffer / stabilizzazione</td><td>Entrambi</td><td><span class="badge b-dev">SVILUPPO</span></td></tr>
+  <tr style="background:#f0f0f0"><td>10–21/08</td><td>🏖️ Ferie estive</td><td>—</td><td>—</td></tr>
+  <tr><td>24–29/08</td><td>Preparazione UAT + demo</td><td>Entrambi</td><td><span class="badge b-dev">SVILUPPO</span></td></tr>
+  <tr><td>01–05/09</td><td>UAT con SellaLab + approvazione</td><td>Entrambi</td><td><span class="badge b-stakeholder">STAKEHOLDER</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>05/09</strong></td><td>◆ M5 — UAT Superata</td><td>Entrambi</td><td><span class="badge b-gate">MILESTONE</span></td></tr>
+  <tr><td>08–12/09</td><td>Deploy produzione + primo run + invio dati</td><td>Entrambi</td><td><span class="badge b-backbone">BACKBONE</span></td></tr>
+  <tr style="background:#eafaf1"><td><strong>15/09</strong></td><td>◆ M6 — 🚀 GO-LIVE</td><td>Entrambi</td><td><span class="badge b-gate">MILESTONE</span></td></tr>
+</table>
+
+<div class="footer">
+  Playbook Operativo v2 — SellaLab Margini Clienti su Piattaforma Backbone &nbsp;|&nbsp; Effort: 30 gg/u (contingency inclusa) &nbsp;|&nbsp; 14/05/2026 &nbsp;|&nbsp; Centrico / CNT Data Management
+</div>
+
+</body>
+</html>

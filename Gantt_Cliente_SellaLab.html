@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gantt Progetto SellaLab — Vista Cliente</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm; }
+  @media print { body { font-size: 9pt; } .no-print { display: none; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: #fff; color: #1a1a2e; padding: 20px 30px; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #003366; padding-bottom: 12px; margin-bottom: 20px; }
+  .header h1 { font-size: 20px; color: #003366; }
+  .header .meta { font-size: 11px; color: #666; text-align: right; line-height: 1.6; }
+
+  /* GANTT */
+  .gantt { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 11px; }
+  .gantt th { background: #003366; color: #fff; padding: 6px 4px; text-align: center; font-weight: 600; font-size: 10px; letter-spacing: 0.3px; border: 1px solid #002244; }
+  .gantt th.month-header { font-size: 12px; letter-spacing: 1px; }
+  .gantt th.activity-header { text-align: left; width: 200px; min-width: 200px; }
+  .gantt td { padding: 0; height: 28px; border: 1px solid #e0e0e0; position: relative; }
+  .gantt td.activity-cell { padding: 4px 8px; font-weight: 600; font-size: 11px; white-space: nowrap; background: #fafafa; border-right: 2px solid #ccc; }
+  .gantt tr:nth-child(even) td { background: #f7f9fc; }
+  .gantt tr:nth-child(even) td.activity-cell { background: #f0f3f7; }
+  .gantt tr.separator td { height: 4px; background: #e8edf2; padding: 0; }
+
+  /* Bars */
+  .bar { position: absolute; top: 4px; bottom: 4px; border-radius: 3px; opacity: 0.9; }
+  .bar-done { background: #95a5a6; left: 5%; right: 5%; }
+  .bar-analysis { background: #3498db; }
+  .bar-poc { background: #e67e22; }
+  .bar-dev { background: #27ae60; }
+  .bar-test { background: #9b59b6; }
+  .bar-auto { background: #16a085; }
+  .bar-uat { background: #2980b9; }
+  .bar-golive { background: #c0392b; }
+  .bar-buffer { background: repeating-linear-gradient(45deg, #bdc3c7, #bdc3c7 4px, #ecf0f1 4px, #ecf0f1 8px); }
+  .bar-ferie { background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 4px, #e0e0e0 4px, #e0e0e0 8px); }
+
+  .bar-full { left: 3%; right: 3%; }
+  .bar-left { left: 3%; right: 50%; }
+  .bar-right { left: 50%; right: 3%; }
+  .bar-left-wide { left: 3%; right: 25%; }
+  .bar-right-narrow { left: 75%; right: 3%; }
+  .bar-center { left: 25%; right: 25%; }
+
+  /* Milestones & Gates */
+  .milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: #003366; border-radius: 3px; transform: translate(-50%, -50%) rotate(45deg); z-index: 2; }
+  .gate { position: absolute; top: 2px; bottom: 2px; left: 10%; right: 10%; background: #c0392b; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 800; letter-spacing: 0.5px; z-index: 2; }
+
+  /* Today marker */
+  .today-col { background: rgba(231, 76, 60, 0.08) !important; }
+  .today-marker { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #e74c3c; z-index: 3; }
+
+  /* Standup markers */
+  .standup { position: absolute; top: 2px; bottom: 2px; left: 25%; right: 25%; background: #f39c12; border-radius: 3px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .standup-icon { font-size: 10px; color: #fff; font-weight: 800; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; padding: 10px 15px; background: #f7f9fc; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 11px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-color { width: 18px; height: 12px; border-radius: 2px; }
+
+  /* Decision points */
+  .decisions { margin-top: 20px; }
+  .decisions h3 { font-size: 14px; color: #003366; margin-bottom: 10px; border-bottom: 2px solid #003366; padding-bottom: 4px; }
+  .decision-timeline { display: flex; align-items: stretch; gap: 0; margin: 10px 0; }
+  .decision-point { flex: 1; text-align: center; padding: 12px 8px; border-radius: 8px; font-size: 11px; line-height: 1.5; }
+  .dp-green { background: #eafaf1; border: 2px solid #27ae60; }
+  .dp-yellow { background: #fef9e7; border: 2px solid #f39c12; }
+  .dp-red { background: #fdedec; border: 2px solid #c0392b; }
+  .dp-arrow { display: flex; align-items: center; font-size: 20px; color: #999; padding: 0 4px; }
+  .dp-date { font-weight: 800; font-size: 13px; display: block; margin-bottom: 3px; }
+  .dp-label { font-weight: 700; display: block; }
+
+  /* Standup schedule */
+  .standup-schedule { margin-top: 20px; }
+  .standup-schedule h3 { font-size: 14px; color: #003366; margin-bottom: 10px; border-bottom: 2px solid #003366; padding-bottom: 4px; }
+  .standup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .standup-card { background: #fff8e1; border: 1px solid #f9e79f; border-radius: 6px; padding: 8px 10px; text-align: center; font-size: 11px; }
+  .standup-card .date { font-weight: 700; color: #7d6608; font-size: 12px; }
+  .standup-card .topic { color: #555; margin-top: 3px; }
+  .standup-card.highlight { border: 2px solid #c0392b; background: #fdedec; }
+  .standup-card.highlight .date { color: #922b21; }
+  .standup-card.done { opacity: 0.5; }
+
+  .footer { text-align: center; margin-top: 25px; padding-top: 10px; border-top: 1px solid #ddd; color: #aaa; font-size: 9px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 SellaLab Margini Clienti — Piano di Progetto</h1>
+  <div class="meta">
+    Progetto 0023650<br>
+    Piattaforma: <strong>Backbone</strong> | Effort: <strong>30 gg/u</strong><br>
+    Aggiornato al: <strong>14/05/2026</strong>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-color" style="background:#95a5a6"></div> Completato</div>
+  <div class="legend-item"><div class="legend-color" style="background:#3498db"></div> Analisi / Requisiti</div>
+  <div class="legend-item"><div class="legend-color" style="background:#e67e22"></div> PoC Backbone</div>
+  <div class="legend-item"><div class="legend-color" style="background:#27ae60"></div> Sviluppo</div>
+  <div class="legend-item"><div class="legend-color" style="background:#9b59b6"></div> Test</div>
+  <div class="legend-item"><div class="legend-color" style="background:#16a085"></div> Automazione</div>
+  <div class="legend-item"><div class="legend-color" style="background:#2980b9"></div> UAT</div>
+  <div class="legend-item"><div class="legend-color" style="background:#c0392b"></div> Go-Live / Gate</div>
+  <div class="legend-item"><div class="legend-color" style="background:#f39c12"></div> Stand-up Settimanale (15 min)</div>
+  <div class="legend-item"><div style="width:16px;height:16px;background:#003366;border-radius:3px;transform:rotate(45deg);margin:-2px 0"></div> Milestone</div>
+</div>
+
+<!-- GANTT TABLE -->
+<table class="gantt">
+  <!-- MONTH HEADERS -->
+  <tr>
+    <th class="activity-header" rowspan="2">Attività</th>
+    <th class="month-header" colspan="4" style="background:#1a3d5c">MAGGIO</th>
+    <th class="month-header" colspan="4" style="background:#1a5276">GIUGNO</th>
+    <th class="month-header" colspan="5" style="background:#1a6d92">LUGLIO</th>
+    <th class="month-header" colspan="4" style="background:#1a8aad">AGOSTO</th>
+    <th class="month-header" colspan="3" style="background:#1aa3c8">SETTEMBRE</th>
+  </tr>
+  <!-- WEEK HEADERS -->
+  <tr>
+    <!-- MAY: S1(01) S2(04) S3(11) S4(18) S5(25) → but S1 is just 01/05 so group: -->
+    <th>S2<br><span style="font-size:8px">04</span></th>
+    <th>S3<br><span style="font-size:8px">11</span></th>
+    <th>S4<br><span style="font-size:8px">18</span></th>
+    <th>S5<br><span style="font-size:8px">25</span></th>
+    <!-- JUN -->
+    <th>S6<br><span style="font-size:8px">01</span></th>
+    <th>S7<br><span style="font-size:8px">08</span></th>
+    <th>S8<br><span style="font-size:8px">15</span></th>
+    <th>S9<br><span style="font-size:8px">22</span></th>
+    <!-- JUL -->
+    <th>S10<br><span style="font-size:8px">29/6</span></th>
+    <th>S11<br><span style="font-size:8px">06</span></th>
+    <th>S12<br><span style="font-size:8px">13</span></th>
+    <th>S13<br><span style="font-size:8px">20</span></th>
+    <th>S14<br><span style="font-size:8px">27</span></th>
+    <!-- AUG -->
+    <th>S15<br><span style="font-size:8px">03</span></th>
+    <th colspan="2" style="background:#666;font-size:9px">FERIE<br><span style="font-size:8px">10–21</span></th>
+    <th>S18<br><span style="font-size:8px">24</span></th>
+    <!-- SEP -->
+    <th>S19<br><span style="font-size:8px">01</span></th>
+    <th>S20<br><span style="font-size:8px">08</span></th>
+    <th><span style="font-size:8px">15</span></th>
+  </tr>
+
+  <!-- ROW: Raccolta Requisiti -->
+  <tr>
+    <td class="activity-cell">📋 Raccolta Requisiti</td>
+    <td style="position:relative"><div class="bar bar-done bar-full"></div></td>
+    <td style="position:relative" class="today-col"><div class="bar bar-done bar-full"></div></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Analisi Funzionale -->
+  <tr>
+    <td class="activity-cell">📄 Analisi Funzionale</td>
+    <td style="position:relative"><div class="bar bar-done bar-full"></div></td>
+    <td style="position:relative" class="today-col"><div class="bar bar-analysis bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-analysis bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-analysis bar-full"></div></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: PoC Backbone -->
+  <tr>
+    <td class="activity-cell">🔧 PoC Piattaforma</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td style="position:relative"><div class="bar bar-poc bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-poc bar-left"></div></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- MILESTONE M1 + GATE 1 -->
+  <tr>
+    <td class="activity-cell" style="color:#c0392b;font-weight:800">🔴 GATE #1 — GO/NO-GO</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td>
+    <td style="position:relative"><div class="gate">29/05</div></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- SEPARATOR -->
+  <tr class="separator"><td colspan="21"></td></tr>
+
+  <!-- ROW: Flusso sFTP / Ingestion -->
+  <tr>
+    <td class="activity-cell">📥 Flusso sFTP + Ingestion</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Test Ingestion -->
+  <tr>
+    <td class="activity-cell" style="padding-left:20px;color:#666">└ Test Ingestion</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td>
+    <td style="position:relative"><div class="bar bar-test bar-right"></div></td>
+    <td style="position:relative"><div class="bar bar-test bar-full"></div></td>
+    <td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- GATE 2 - PNR -->
+  <tr>
+    <td class="activity-cell" style="color:#c0392b;font-weight:800">🔴 GATE #2 — PNR</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td>
+    <td style="position:relative"><div class="gate">26/06</div></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- SEPARATOR -->
+  <tr class="separator"><td colspan="21"></td></tr>
+
+  <!-- ROW: Procedura Perimetro -->
+  <tr>
+    <td class="activity-cell">👥 Procedura Perimetro Clienti</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Procedura Margini -->
+  <tr>
+    <td class="activity-cell">💰 Procedura Margini</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td>
+    <td style="position:relative"><div class="bar bar-dev bar-right"></div></td>
+    <td style="position:relative"><div class="bar bar-dev bar-full"></div></td>
+    <td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Test Core -->
+  <tr>
+    <td class="activity-cell" style="padding-left:20px;color:#666">└ Test e Validazione</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td>
+    <td style="position:relative"><div class="bar bar-test bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-test bar-full"></div></td>
+    <td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- SEPARATOR -->
+  <tr class="separator"><td colspan="21"></td></tr>
+
+  <!-- ROW: Automazione -->
+  <tr>
+    <td class="activity-cell">⚙️ Automazione Pipeline</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td>
+    <td style="position:relative"><div class="bar bar-auto bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-auto bar-full"></div></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Buffer -->
+  <tr>
+    <td class="activity-cell" style="color:#999">⏳ Buffer</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td style="position:relative"><div class="bar bar-buffer bar-full"></div></td>
+    <td colspan="2"></td><td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- ROW: Ferie -->
+  <tr>
+    <td class="activity-cell" style="color:#999">🏖️ Ferie</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td>
+    <td colspan="2" style="position:relative"><div class="bar bar-ferie" style="left:0;right:0;top:4px;bottom:4px;border-radius:3px"></div></td>
+    <td></td>
+    <td></td><td></td><td></td>
+  </tr>
+
+  <!-- SEPARATOR -->
+  <tr class="separator"><td colspan="21"></td></tr>
+
+  <!-- ROW: UAT -->
+  <tr>
+    <td class="activity-cell">✅ UAT con SellaLab</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td>
+    <td style="position:relative"><div class="bar bar-uat bar-full"></div></td>
+    <td style="position:relative"><div class="bar bar-uat bar-full"></div></td>
+    <td></td><td></td>
+  </tr>
+
+  <!-- ROW: Go-Live -->
+  <tr>
+    <td class="activity-cell">🚀 Deploy e Go-Live</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td colspan="2"></td><td></td>
+    <td></td>
+    <td style="position:relative"><div class="bar bar-golive bar-full"></div></td>
+    <td style="position:relative"><div class="milestone"></div></td>
+  </tr>
+
+  <!-- ROW: Stand-up settimanale 15min dal 22/05 -->
+  <tr>
+    <td class="activity-cell" style="color:#f39c12;font-weight:700">📞 Stand-up settimanale</td>
+    <td></td>
+    <td class="today-col"></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">①</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">②</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">③</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">④</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑤</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑥</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑦</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑧</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑨</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑩</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑪</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑫</span></div></td>
+    <td colspan="2"></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑬</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑭</span></div></td>
+    <td style="position:relative"><div class="standup"><span class="standup-icon">⑮</span></div></td>
+    <td></td>
+  </tr>
+</table>
+
+<!-- DECISION POINTS -->
+<div class="decisions">
+  <h3>🔴 Punti di Decisione — Backbone vs Oracle</h3>
+
+  <div class="decision-timeline">
+    <div class="decision-point dp-green">
+      <span class="dp-date">29/05</span>
+      <span class="dp-label">GATE #1</span>
+      GO / NO-GO<br>
+      <small>Fattibilità tecnica<br>confermata dai PoC</small>
+    </div>
+    <div class="dp-arrow">→</div>
+    <div class="decision-point dp-yellow">
+      <span class="dp-date">26/06</span>
+      <span class="dp-label">GATE #2 — PNR</span>
+      Punto di Non Ritorno<br>
+      <small>Dopo questa data<br>non si torna a Oracle</small>
+    </div>
+    <div class="dp-arrow">→</div>
+    <div class="decision-point dp-red">
+      <span class="dp-date">10/07</span>
+      <span class="dp-label">GATE #3</span>
+      Limite assoluto<br>
+      <small>Solo se GO condizionato<br>al Gate #2</small>
+    </div>
+    <div class="dp-arrow">→</div>
+    <div class="decision-point" style="background:#eafaf1;border:2px solid #27ae60">
+      <span class="dp-date">15/09</span>
+      <span class="dp-label">🚀 GO-LIVE</span>
+      Produzione<br>
+      <small>Prima estrazione<br>dati consegnata</small>
+    </div>
+  </div>
+
+  <table style="font-size:12px;margin-top:10px">
+    <tr><th style="width:100px">Gate</th><th style="width:100px">Data</th><th>Cosa si decide</th><th style="width:180px">Se switch a Oracle</th></tr>
+    <tr><td><span style="color:#27ae60;font-weight:700">Gate #1</span></td><td><strong>29/05</strong></td><td>La piattaforma backbone funziona? PoC completati, cross-schema OK, logica procedurale OK?</td><td>Margine <strong>+51 gg</strong> — nessun rischio</td></tr>
+    <tr><td><span style="color:#f39c12;font-weight:700">Gate #2 (PNR)</span></td><td><strong>26/06</strong></td><td>Il team è produttivo? Flusso ingestion funzionante? Performance accettabili?</td><td>Margine <strong>+37 gg</strong> — confortevole</td></tr>
+    <tr><td><span style="color:#c0392b;font-weight:700">Gate #3</span></td><td><strong>10/07</strong></td><td>Solo se GO condizionato al Gate #2. Progressi sufficienti per completare?</td><td>Margine <strong>+29 gg</strong> — gestibile</td></tr>
+  </table>
+</div>
+
+<!-- STANDUP SCHEDULE -->
+<div class="standup-schedule">
+  <h3>📞 Calendario Stand-up Settimanali (15 min) — dal 22/05</h3>
+  <div class="standup-grid">
+    <div class="standup-card">
+      <div class="date">① 22/05</div>
+      <div class="topic">Kick-off + setup PoC</div>
+    </div>
+    <div class="standup-card highlight">
+      <div class="date">② 29/05</div>
+      <div class="topic">Gate #1 — GO/NO-GO</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">③ 05/06</div>
+      <div class="topic">Avvio sviluppo ingestion</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">④ 12/06</div>
+      <div class="topic">Avanzamento ingestion</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑤ 19/06</div>
+      <div class="topic">Test ingestion</div>
+    </div>
+    <div class="standup-card highlight">
+      <div class="date">⑥ 26/06</div>
+      <div class="topic">Gate #2 — Decisione PNR</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑦ 03/07</div>
+      <div class="topic">Avvio core dev</div>
+    </div>
+    <div class="standup-card highlight">
+      <div class="date">⑧ 10/07</div>
+      <div class="topic">Gate #3 (se necessario)</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑨ 17/07</div>
+      <div class="topic">Avanzamento core</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑩ 24/07</div>
+      <div class="topic">Avanzamento pipeline</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑪ 31/07</div>
+      <div class="topic">Chiusura pre-buffer</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑫ 07/08</div>
+      <div class="topic">Buffer / pre-ferie</div>
+    </div>
+    <div class="standup-card" style="opacity:0.4;border-style:dashed">
+      <div class="date">— FERIE —</div>
+      <div class="topic">10–21 agosto</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑬ 28/08</div>
+      <div class="topic">Ripresa + avvio UAT</div>
+    </div>
+    <div class="standup-card">
+      <div class="date">⑭ 04/09</div>
+      <div class="topic">Avanzamento UAT</div>
+    </div>
+    <div class="standup-card highlight">
+      <div class="date">⑮ 11/09</div>
+      <div class="topic">Approvazione UAT + pre Go-Live</div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:#666;margin-top:8px">
+    <span style="color:#c0392b">■</span> Stand-up con decisione formale &nbsp;|&nbsp;
+    <span style="color:#f39c12">■</span> Stand-up di avanzamento &nbsp;|&nbsp;
+    Ogni venerdì, 15 minuti. Giorno e orario confermati con il cliente.
+  </p>
+</div>
+
+<div class="footer">
+  SellaLab Margini Clienti — Piano Progetto (vista cliente) &nbsp;|&nbsp; Effort: 30 gg/u backbone &nbsp;|&nbsp; 14/05/2026
+</div>
+
+</body>
+</html>

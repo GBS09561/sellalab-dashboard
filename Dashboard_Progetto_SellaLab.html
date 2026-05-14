@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SellaLab Margini Clienti — Dashboard Progetto</title>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* === TOP NAV BAR === */
+  .topbar { background: linear-gradient(135deg, #003366, #1a5276); color: #fff; padding: 0 24px; display: flex; align-items: center; height: 56px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 100; }
+  .topbar .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; white-space: nowrap; }
+  .topbar .logo small { font-weight: 400; opacity: 0.7; font-size: 12px; margin-left: 10px; }
+  .topbar .spacer { flex: 1; }
+  .topbar .meta-info { font-size: 11px; opacity: 0.8; text-align: right; line-height: 1.5; }
+
+  /* === TAB BAR === */
+  .tabbar { background: #fff; display: flex; align-items: stretch; padding: 0 16px; border-bottom: 2px solid #e0e4e8; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .tab-btn { background: none; border: none; padding: 12px 20px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .tab-btn:hover { color: #003366; background: #f7f9fc; }
+  .tab-btn.active { color: #003366; border-bottom-color: #003366; }
+  .tab-btn .tab-icon { font-size: 16px; }
+  .tab-btn .badge-count { background: #e74c3c; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+
+  /* === MAIN CONTENT AREA === */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* === SECTIONS === */
+  .section { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .section.active { display: flex; }
+
+  /* === SECTION TOOLBAR === */
+  .section-toolbar { background: #fff; padding: 8px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e0e4e8; flex-shrink: 0; }
+  .section-toolbar .toolbar-title { font-size: 13px; font-weight: 600; color: #003366; flex: 1; }
+  .btn { padding: 7px 16px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+  .btn:hover { background: #f0f4f8; border-color: #999; }
+  .btn-primary { background: #003366; color: #fff; border-color: #003366; }
+  .btn-primary:hover { background: #1a5276; }
+  .btn-danger { background: #c0392b; color: #fff; border-color: #c0392b; }
+  .btn-danger:hover { background: #a93226; }
+  .btn-success { background: #27ae60; color: #fff; border-color: #27ae60; }
+  .btn-success:hover { background: #219a52; }
+  .btn-pdf { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+  .btn-pdf:hover { background: #c0392b; }
+  .btn-upload { background: #2980b9; color: #fff; border-color: #2980b9; }
+  .btn-upload:hover { background: #2471a3; }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  /* === IFRAME CONTAINER === */
+  .iframe-wrap { flex: 1; overflow: hidden; }
+  .iframe-wrap iframe { width: 100%; height: 100%; border: none; background: #fff; }
+
+  /* === UPLOAD / DOCUMENT AREAS === */
+  .upload-panel { background: #f7f9fc; border-bottom: 1px solid #e0e4e8; overflow: hidden; transition: max-height 0.3s ease; }
+  .upload-panel.collapsed { max-height: 0; padding: 0; }
+  .upload-panel.expanded { max-height: 600px; overflow-y: auto; }
+  .upload-inner { padding: 16px 20px; }
+
+  .drop-zone { border: 2px dashed #aab7c4; border-radius: 8px; padding: 30px 20px; text-align: center; background: #fff; cursor: pointer; transition: all 0.2s; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #003366; background: #eef3fa; }
+  .drop-zone .drop-icon { font-size: 32px; margin-bottom: 8px; }
+  .drop-zone .drop-text { font-size: 13px; color: #666; }
+  .drop-zone .drop-text strong { color: #003366; }
+  .drop-zone input[type="file"] { display: none; }
+
+  .doc-list { margin-top: 12px; }
+  .doc-item { background: #fff; border: 1px solid #e0e4e8; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+  .doc-header { display: flex; align-items: center; padding: 10px 14px; gap: 10px; cursor: pointer; }
+  .doc-header:hover { background: #f7f9fc; }
+  .doc-header .doc-icon { font-size: 20px; }
+  .doc-header .doc-name { flex: 1; font-weight: 600; font-size: 12px; color: #1a1a2e; }
+  .doc-header .doc-date { font-size: 11px; color: #999; }
+  .doc-header .doc-toggle { font-size: 11px; color: #666; padding: 2px 8px; border-radius: 4px; background: #f0f0f0; border: none; cursor: pointer; }
+  .doc-header .doc-remove { font-size: 14px; color: #c0392b; background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .doc-header .doc-remove:hover { background: #fdedec; }
+  .doc-content { display: none; padding: 14px 20px; border-top: 1px solid #e8edf2; font-size: 12px; line-height: 1.6; max-height: 400px; overflow-y: auto; }
+  .doc-content.visible { display: block; }
+  .doc-content h1, .doc-content h2, .doc-content h3 { color: #003366; margin: 12px 0 6px; }
+  .doc-content table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 11px; }
+  .doc-content table th, .doc-content table td { border: 1px solid #ddd; padding: 4px 8px; }
+  .doc-content table th { background: #f0f4f8; }
+  .doc-content p { margin: 6px 0; }
+  .doc-content img { max-width: 100%; height: auto; }
+
+  /* === MINUTE SECTION SPECIFIC === */
+  .minute-empty { text-align: center; padding: 60px 20px; color: #999; }
+  .minute-empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .minute-empty p { font-size: 14px; }
+
+  .minute-list-area { flex: 1; overflow-y: auto; padding: 16px 20px; background: #f7f9fc; }
+  .minute-stats { display: flex; gap: 16px; margin-bottom: 16px; }
+  .minute-stat { background: #fff; border: 1px solid #e0e4e8; border-radius: 8px; padding: 12px 16px; flex: 1; text-align: center; }
+  .minute-stat .stat-number { font-size: 24px; font-weight: 800; color: #003366; }
+  .minute-stat .stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+
+  /* === PERSISTENCE STATUS BAR === */
+  .persist-bar { background: #eafaf1; border-bottom: 1px solid #a9dfbf; padding: 4px 20px; font-size: 11px; color: #1e8449; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .persist-bar .persist-icon { font-size: 14px; }
+  .persist-bar .persist-text { flex: 1; }
+  .persist-bar .persist-action { background: none; border: 1px solid #27ae60; color: #27ae60; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; }
+  .persist-bar .persist-action:hover { background: #27ae60; color: #fff; }
+  .persist-bar.warn { background: #fef9e7; border-color: #f9e79f; color: #7d6608; }
+
+  /* === TOAST NOTIFICATION === */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s ease; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: #e74c3c; }
+
+  /* === LOADING OVERLAY === */
+  .loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; z-index: 50; }
+  .loading.hidden { display: none; }
+  .spinner { width: 36px; height: 36px; border: 4px solid #e0e4e8; border-top-color: #003366; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .tab-btn { padding: 10px 12px; font-size: 11px; }
+    .tab-btn .tab-label { display: none; }
+    .topbar .meta-info { display: none; }
+  }
+
+  /* === PRINT === */
+  @media print {
+    .topbar, .tabbar, .section-toolbar, .upload-panel { display: none !important; }
+    .section { display: flex !important; }
+    .iframe-wrap iframe { height: auto; min-height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">📊 SellaLab Margini Clienti <small>Dashboard Progetto 0023650</small></div>
+  <div class="spacer"></div>
+  <div class="meta-info">
+    Piattaforma: <strong>Backbone</strong> | Effort: <strong>30 gg/u</strong><br>
+    Aggiornato al: <strong>14/05/2026</strong>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="sec-piano" onclick="switchTab('sec-piano')">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Piano di Progetto</span>
+  </button>
+  <button class="tab-btn" data-tab="sec-playbook" onclick="switchTab('sec-playbook')">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">Piano Operativo</span>
+  </button>
+  <button class="tab-btn" data-tab="sec-gantt" onclick="switchTab('sec-gantt')">
+    <span class="tab-icon">📊</span>
+    <span class="tab-label">Gantt Cliente</span>
+  </button>
+  <button class="tab-btn" data-tab="sec-minute" onclick="switchTab('sec-minute')">
+    <span class="tab-icon">📝</span>
+    <span class="tab-label">Minute Stand-up</span>
+    <span class="badge-count" id="minute-count" style="display:none">0</span>
+  </button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+<!-- PERSISTENCE STATUS BAR -->
+<div class="persist-bar" id="persist-bar">
+  <span class="persist-icon">💾</span>
+  <span class="persist-text" id="persist-text">I documenti caricati vengono salvati nel browser (IndexedDB). Copia i file .docx anche in <code>docs\</code> per backup.</span>
+  <button class="persist-action" onclick="exportAllDocsBackup()">📁 Scarica Backup ZIP</button>
+</div>
+
+  <!-- ======================== SECTION 1: PIANO DI PROGETTO ======================== -->
+  <div id="sec-piano" class="section active">
+    <div class="section-toolbar">
+      <div class="toolbar-title">Piano di Progetto v2 — SellaLab Margini Clienti su Piattaforma Backbone</div>
+      <button class="btn btn-upload" onclick="toggleUpload('piano-upload')">
+        📄 Carica Proposta Progettuale
+      </button>
+      <button class="btn btn-pdf" onclick="exportPDF('piano-iframe')">
+        📥 Export PDF
+      </button>
+    </div>
+
+    <!-- Upload area for project proposal -->
+    <div id="piano-upload" class="upload-panel collapsed">
+      <div class="upload-inner">
+        <div class="drop-zone" id="piano-dropzone" onclick="document.getElementById('piano-file-input').click()"
+             ondragover="event.preventDefault(); this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault(); this.classList.remove('dragover'); handleWordFile(event.dataTransfer.files[0], 'piano-docs')">
+          <div class="drop-icon">📄</div>
+          <div class="drop-text">
+            <strong>Trascina qui</strong> il file Word (.docx) della proposta progettuale<br>
+            oppure <strong>clicca per sfogliare</strong><br>
+            <span style="font-size:10px;color:#999">💡 Salva anche una copia in <code>docs\proposta\</code></span>
+          </div>
+          <input type="file" id="piano-file-input" accept=".docx,.doc" onchange="handleWordFile(this.files[0], 'piano-docs')">
+        </div>
+        <div class="doc-list" id="piano-docs"></div>
+      </div>
+    </div>
+
+    <!-- Iframe with Piano di Progetto -->
+    <div class="iframe-wrap">
+      <iframe id="piano-iframe" src="GANTT_SellaLab_Backbone_v2.html"></iframe>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 2: PIANO OPERATIVO ======================== -->
+  <div id="sec-playbook" class="section">
+    <div class="section-toolbar">
+      <div class="toolbar-title">Playbook Operativo v2 — Step by Step</div>
+      <button class="btn btn-pdf" onclick="exportPDF('playbook-iframe')">
+        📥 Export PDF
+      </button>
+    </div>
+
+    <div class="iframe-wrap">
+      <iframe id="playbook-iframe" src="Playbook_Operativo_StepByStep_v2.html"></iframe>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 3: GANTT CLIENTE ======================== -->
+  <div id="sec-gantt" class="section">
+    <div class="section-toolbar">
+      <div class="toolbar-title">Gantt Progetto — Vista Cliente con Stand-up Settimanali</div>
+      <button class="btn btn-pdf" onclick="exportPDF('gantt-iframe')">
+        📥 Export PDF
+      </button>
+    </div>
+
+    <div class="iframe-wrap">
+      <iframe id="gantt-iframe" src="Gantt_Cliente_SellaLab.html"></iframe>
+    </div>
+  </div>
+
+  <!-- ======================== SECTION 4: MINUTE STAND-UP ======================== -->
+  <div id="sec-minute" class="section">
+    <div class="section-toolbar">
+      <div class="toolbar-title">Minute Stand-up Meeting Settimanali (15 min) — dal 22/05</div>
+      <button class="btn btn-upload" onclick="toggleUpload('minute-upload')">
+        📄 Carica Minuta
+      </button>
+      <button class="btn btn-pdf" onclick="exportMinutePDF()">
+        📥 Export Tutte le Minute (PDF)
+      </button>
+    </div>
+
+    <!-- Upload area for minutes -->
+    <div id="minute-upload" class="upload-panel collapsed">
+      <div class="upload-inner">
+        <div style="display:flex; gap:12px; margin-bottom:12px; align-items:end">
+          <div style="flex:1">
+            <label style="font-size:11px;font-weight:600;color:#666;display:block;margin-bottom:4px">Data Stand-up</label>
+            <input type="date" id="minute-date" style="padding:6px 10px;border:1px solid #ccc;border-radius:6px;font-size:12px;width:100%">
+          </div>
+          <div style="flex:2">
+            <label style="font-size:11px;font-weight:600;color:#666;display:block;margin-bottom:4px">Titolo / Tema</label>
+            <input type="text" id="minute-title" placeholder="es. Stand-up #1 — Kick-off + setup PoC" style="padding:6px 10px;border:1px solid #ccc;border-radius:6px;font-size:12px;width:100%">
+          </div>
+        </div>
+        <div class="drop-zone" id="minute-dropzone" onclick="document.getElementById('minute-file-input').click()"
+             ondragover="event.preventDefault(); this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault(); this.classList.remove('dragover'); handleMinuteFile(event.dataTransfer.files[0])">
+          <div class="drop-icon">📝</div>
+          <div class="drop-text">
+            <strong>Trascina qui</strong> il file Word (.docx) della minuta<br>
+            oppure <strong>clicca per sfogliare</strong><br>
+            <span style="font-size:10px;color:#999">💡 Salva anche una copia in <code>docs\minute\</code></span>
+          </div>
+          <input type="file" id="minute-file-input" accept=".docx,.doc" onchange="handleMinuteFile(this.files[0])">
+        </div>
+      </div>
+    </div>
+
+    <!-- Minutes list or empty state -->
+    <div class="minute-list-area" id="minute-list-area">
+      <!-- Stats -->
+      <div class="minute-stats" id="minute-stats" style="display:none">
+        <div class="minute-stat">
+          <div class="stat-number" id="stat-total">0</div>
+          <div class="stat-label">Minute caricate</div>
+        </div>
+        <div class="minute-stat">
+          <div class="stat-number" id="stat-next">—</div>
+          <div class="stat-label">Prossimo stand-up</div>
+        </div>
+        <div class="minute-stat">
+          <div class="stat-number" id="stat-schedule">15</div>
+          <div class="stat-label">Stand-up previsti</div>
+        </div>
+      </div>
+
+      <!-- Schedule reference -->
+      <div style="background:#fff;border:1px solid #e0e4e8;border-radius:8px;padding:14px 18px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#003366;margin-bottom:8px">📅 Calendario Stand-up Settimanali (15 min)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;font-size:11px" id="standup-calendar">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Uploaded minutes list -->
+      <div class="doc-list" id="minute-docs"></div>
+
+      <!-- Empty state -->
+      <div class="minute-empty" id="minute-empty">
+        <div class="empty-icon">📝</div>
+        <p>Nessuna minuta caricata</p>
+        <p style="font-size:12px;margin-top:4px">Clicca <strong>"Carica Minuta"</strong> per aggiungere il primo verbale</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   IndexedDB PERSISTENCE
+   ============================================================ */
+const DB_NAME = 'SellaLabDashboard';
+const DB_VERSION = 1;
+let db = null;
+
+function openDB() {
+  return new Promise(function(resolve, reject) {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = function(e) {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('proposte')) {
+        d.createObjectStore('proposte', { keyPath: 'id', autoIncrement: true });
+      }
+      if (!d.objectStoreNames.contains('minute')) {
+        d.createObjectStore('minute', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = function(e) { db = e.target.result; resolve(db); };
+    req.onerror = function(e) { reject(e.target.error); };
+  });
+}
+
+function dbPut(storeName, record) {
+  return new Promise(function(resolve, reject) {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.put(record);
+    req.onsuccess = function() { resolve(req.result); };
+    req.onerror = function() { reject(req.error); };
+  });
+}
+
+function dbGetAll(storeName) {
+  return new Promise(function(resolve, reject) {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = function() { resolve(req.result); };
+    req.onerror = function() { reject(req.error); };
+  });
+}
+
+function dbDelete(storeName, id) {
+  return new Promise(function(resolve, reject) {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.delete(id);
+    req.onsuccess = function() { resolve(); };
+    req.onerror = function() { reject(req.error); };
+  });
+}
+
+function dbClear(storeName) {
+  return new Promise(function(resolve, reject) {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.clear();
+    req.onsuccess = function() { resolve(); };
+    req.onerror = function() { reject(req.error); };
+  });
+}
+
+/* ============================================================
+   TAB NAVIGATION
+   ============================================================ */
+function switchTab(tabId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
+}
+
+/* ============================================================
+   TOGGLE UPLOAD PANELS
+   ============================================================ */
+function toggleUpload(panelId) {
+  const panel = document.getElementById(panelId);
+  if (panel.classList.contains('expanded')) {
+    panel.classList.remove('expanded');
+    panel.classList.add('collapsed');
+  } else {
+    panel.classList.remove('collapsed');
+    panel.classList.add('expanded');
+  }
+}
+
+/* ============================================================
+   PDF EXPORT (via iframe print)
+   ============================================================ */
+function exportPDF(iframeId) {
+  const iframe = document.getElementById(iframeId);
+  try {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } catch (e) {
+    showToast('Errore: impossibile stampare. Verifica che il file sia accessibile.', true);
+  }
+}
+
+function exportMinutePDF() {
+  const docs = document.querySelectorAll('#minute-docs .doc-item');
+  if (docs.length === 0) {
+    showToast('Nessuna minuta da esportare', true);
+    return;
+  }
+
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  let html = '<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">';
+  html += '<title>Minute Stand-up — SellaLab Margini Clienti</title>';
+  html += '<style>';
+  html += 'body{font-family:"Segoe UI",Calibri,Arial,sans-serif;padding:30px 40px;color:#1a1a2e;max-width:900px;margin:0 auto}';
+  html += 'h1{color:#003366;font-size:22px;border-bottom:3px solid #003366;padding-bottom:8px;margin-bottom:20px}';
+  html += '.minute{margin-bottom:30px;page-break-inside:avoid}';
+  html += '.minute-hdr{background:#003366;color:#fff;padding:10px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between}';
+  html += '.minute-hdr strong{font-size:14px}.minute-hdr span{font-size:12px;opacity:0.8}';
+  html += '.minute-body{border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;font-size:12px;line-height:1.6}';
+  html += '.minute-body h1,.minute-body h2,.minute-body h3{color:#003366;margin:10px 0 5px}';
+  html += '.minute-body table{border-collapse:collapse;width:100%;margin:8px 0;font-size:11px}';
+  html += '.minute-body th,.minute-body td{border:1px solid #ddd;padding:4px 8px}';
+  html += '.minute-body th{background:#f0f4f8}';
+  html += '@media print{.minute{page-break-inside:avoid}}';
+  html += '</style></head><body>';
+  html += '<h1>\uD83D\uDCDD Minute Stand-up Meeting — SellaLab Margini Clienti</h1>';
+  html += '<p style="color:#666;font-size:12px;margin-bottom:20px">Progetto 0023650 | Stand-up settimanali 15 min dal 22/05/2026 | Esportato il ' + new Date().toLocaleDateString('it-IT') + '</p>';
+
+  docs.forEach(function(doc) {
+    const name = doc.querySelector('.doc-name').textContent;
+    const date = doc.querySelector('.doc-date').textContent;
+    const content = doc.querySelector('.doc-content').innerHTML;
+    html += '<div class="minute"><div class="minute-hdr"><strong>' + escapeHtml(name) + '</strong><span>' + escapeHtml(date) + '</span></div>';
+    html += '<div class="minute-body">' + content + '</div></div>';
+  });
+
+  html += '</body></html>';
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.onload = function() { printWin.print(); };
+}
+
+/* ============================================================
+   WORD FILE UPLOAD (mammoth.js) + PERSISTENCE
+   ============================================================ */
+function handleWordFile(file, targetId) {
+  if (!file) return;
+  if (!file.name.match(/\.docx?$/i)) {
+    showToast('Formato non supportato. Usa un file .docx', true);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const arrayBuf = e.target.result;
+    if (typeof mammoth === 'undefined') {
+      showToast('Libreria mammoth.js non caricata. Verifica la connessione internet.', true);
+      return;
+    }
+    mammoth.convertToHtml({ arrayBuffer: arrayBuf })
+      .then(function(result) {
+        const now = new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'});
+        const record = {
+          fileName: file.name,
+          dateStr: now,
+          htmlContent: result.value,
+          rawDocx: new Uint8Array(arrayBuf),
+          uploadedAt: Date.now()
+        };
+
+        // Save to IndexedDB
+        dbPut('proposte', record).then(function(id) {
+          record.id = id;
+          renderDocItem(record, targetId, 'proposte');
+          updatePersistBar();
+          showToast('\u2705 "' + file.name + '" caricato e salvato');
+        });
+      })
+      .catch(function(err) {
+        showToast('Errore nella conversione: ' + err.message, true);
+      });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleMinuteFile(file) {
+  if (!file) return;
+  if (!file.name.match(/\.docx?$/i)) {
+    showToast('Formato non supportato. Usa un file .docx', true);
+    return;
+  }
+
+  const dateInput = document.getElementById('minute-date');
+  const titleInput = document.getElementById('minute-title');
+  const dateVal = dateInput.value ? new Date(dateInput.value).toLocaleDateString('it-IT') : new Date().toLocaleDateString('it-IT');
+  const titleVal = titleInput.value || file.name.replace(/\.docx?$/i, '');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const arrayBuf = e.target.result;
+    if (typeof mammoth === 'undefined') {
+      showToast('Libreria mammoth.js non caricata. Verifica la connessione internet.', true);
+      return;
+    }
+    mammoth.convertToHtml({ arrayBuffer: arrayBuf })
+      .then(function(result) {
+        const record = {
+          fileName: file.name,
+          title: titleVal,
+          dateStr: dateVal,
+          htmlContent: result.value,
+          rawDocx: new Uint8Array(arrayBuf),
+          uploadedAt: Date.now()
+        };
+
+        // Save to IndexedDB
+        dbPut('minute', record).then(function(id) {
+          record.id = id;
+          renderMinuteItem(record);
+          updateMinuteStats();
+          updatePersistBar();
+          showToast('\u2705 Minuta "' + titleVal + '" caricata e salvata');
+        });
+
+        // Clear inputs
+        dateInput.value = '';
+        titleInput.value = '';
+      })
+      .catch(function(err) {
+        showToast('Errore nella conversione: ' + err.message, true);
+      });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ============================================================
+   RENDER DOC ITEMS FROM DATA
+   ============================================================ */
+function renderDocItem(record, targetId, storeName) {
+  const container = document.getElementById(targetId);
+  const docItem = document.createElement('div');
+  docItem.className = 'doc-item';
+  docItem.dataset.dbId = record.id;
+  docItem.dataset.store = storeName;
+  docItem.innerHTML =
+    '<div class="doc-header" onclick="toggleDocContent(this)">' +
+      '<span class="doc-icon">\uD83D\uDCC4</span>' +
+      '<span class="doc-name">' + escapeHtml(record.fileName) + '</span>' +
+      '<span class="doc-date">' + record.dateStr + '</span>' +
+      (record.rawDocx ? '<button class="btn btn-sm" onclick="event.stopPropagation(); downloadOriginal(' + record.id + ', \'' + storeName + '\')" title="Scarica .docx originale" style="font-size:10px">\u2B07 .docx</button>' : '') +
+      '<button class="doc-toggle">\u25BC Espandi</button>' +
+      '<button class="doc-remove" onclick="event.stopPropagation(); removeDoc(this)" title="Rimuovi">\u2715</button>' +
+    '</div>' +
+    '<div class="doc-content">' + record.htmlContent + '</div>';
+  container.appendChild(docItem);
+}
+
+function renderMinuteItem(record) {
+  const container = document.getElementById('minute-docs');
+  const docItem = document.createElement('div');
+  docItem.className = 'doc-item';
+  docItem.dataset.dbId = record.id;
+  docItem.dataset.store = 'minute';
+  docItem.innerHTML =
+    '<div class="doc-header" onclick="toggleDocContent(this)">' +
+      '<span class="doc-icon">\uD83D\uDCDD</span>' +
+      '<span class="doc-name">' + escapeHtml(record.title || record.fileName) + '</span>' +
+      '<span class="doc-date">' + record.dateStr + '</span>' +
+      (record.rawDocx ? '<button class="btn btn-sm" onclick="event.stopPropagation(); downloadOriginal(' + record.id + ', \'minute\')" title="Scarica .docx originale" style="font-size:10px">\u2B07 .docx</button>' : '') +
+      '<button class="doc-toggle">\u25BC Espandi</button>' +
+      '<button class="doc-remove" onclick="event.stopPropagation(); removeMinute(this)" title="Rimuovi">\u2715</button>' +
+    '</div>' +
+    '<div class="doc-content">' + record.htmlContent + '</div>';
+  container.insertBefore(docItem, container.firstChild);
+}
+
+/* ============================================================
+   DOWNLOAD ORIGINAL .docx FROM IndexedDB
+   ============================================================ */
+function downloadOriginal(id, storeName) {
+  const tx = db.transaction(storeName, 'readonly');
+  const store = tx.objectStore(storeName);
+  const req = store.get(id);
+  req.onsuccess = function() {
+    const record = req.result;
+    if (!record || !record.rawDocx) {
+      showToast('File originale non disponibile', true);
+      return;
+    }
+    const blob = new Blob([record.rawDocx], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = record.fileName || 'documento.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('\u2B07 "' + (record.fileName || 'documento.docx') + '" scaricato — salvalo in docs\\');
+  };
+}
+
+/* ============================================================
+   EXPORT ALL DOCS AS INDIVIDUAL DOWNLOADS
+   ============================================================ */
+function exportAllDocsBackup() {
+  Promise.all([dbGetAll('proposte'), dbGetAll('minute')]).then(function(results) {
+    const proposte = results[0];
+    const minute = results[1];
+    const all = proposte.concat(minute);
+    if (all.length === 0) {
+      showToast('Nessun documento da esportare', true);
+      return;
+    }
+    // Download each file individually
+    let count = 0;
+    all.forEach(function(record, i) {
+      if (!record.rawDocx) return;
+      setTimeout(function() {
+        const blob = new Blob([record.rawDocx], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const prefix = proposte.indexOf(record) >= 0 ? 'proposta_' : 'minuta_';
+        a.download = prefix + (record.fileName || 'doc_' + record.id + '.docx');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        count++;
+      }, i * 500); // stagger downloads
+    });
+    showToast('\u2705 ' + all.length + ' file in download — salvali in docs\\');
+  });
+}
+
+/* ============================================================
+   DOC INTERACTIONS
+   ============================================================ */
+function toggleDocContent(headerEl) {
+  const content = headerEl.nextElementSibling;
+  const toggle = headerEl.querySelector('.doc-toggle');
+  if (content.classList.contains('visible')) {
+    content.classList.remove('visible');
+    toggle.textContent = '\u25BC Espandi';
+  } else {
+    content.classList.add('visible');
+    toggle.textContent = '\u25B2 Comprimi';
+  }
+}
+
+function removeDoc(btn) {
+  const item = btn.closest('.doc-item');
+  item.style.opacity = '0.5';
+  if (confirm('Rimuovere questo documento?')) {
+    const dbId = parseInt(item.dataset.dbId);
+    const storeName = item.dataset.store;
+    if (dbId && storeName) {
+      dbDelete(storeName, dbId).then(function() {
+        item.remove();
+        updatePersistBar();
+      });
+    } else {
+      item.remove();
+    }
+  } else {
+    item.style.opacity = '1';
+  }
+}
+
+function removeMinute(btn) {
+  const item = btn.closest('.doc-item');
+  item.style.opacity = '0.5';
+  if (confirm('Rimuovere questa minuta?')) {
+    const dbId = parseInt(item.dataset.dbId);
+    if (dbId) {
+      dbDelete('minute', dbId).then(function() {
+        item.remove();
+        updateMinuteStats();
+        updatePersistBar();
+      });
+    } else {
+      item.remove();
+      updateMinuteStats();
+    }
+  } else {
+    item.style.opacity = '1';
+  }
+}
+
+/* ============================================================
+   PERSISTENCE STATUS BAR
+   ============================================================ */
+function updatePersistBar() {
+  Promise.all([dbGetAll('proposte'), dbGetAll('minute')]).then(function(results) {
+    const total = results[0].length + results[1].length;
+    const text = document.getElementById('persist-text');
+    const bar = document.getElementById('persist-bar');
+    if (total > 0) {
+      const totalSize = results[0].concat(results[1]).reduce(function(acc, r) { return acc + (r.rawDocx ? r.rawDocx.length : 0); }, 0);
+      const sizeMB = (totalSize / 1024 / 1024).toFixed(1);
+      text.innerHTML = '\uD83D\uDCBE <strong>' + total + ' documenti</strong> salvati nel browser (' + sizeMB + ' MB). Copia i .docx anche in <code>docs\\</code> per backup su disco.';
+      bar.className = 'persist-bar';
+    } else {
+      text.innerHTML = 'Nessun documento caricato. I file verranno salvati automaticamente nel browser (IndexedDB) + copia in <code>docs\\</code>.';
+      bar.className = 'persist-bar warn';
+    }
+  });
+}
+
+/* ============================================================
+   MINUTE STATS & CALENDAR
+   ============================================================ */
+const standupSchedule = [
+  { n: '\u2460', date: '22/05', topic: 'Kick-off + setup PoC', gate: false },
+  { n: '\u2461', date: '29/05', topic: 'Gate #1 \u2014 GO/NO-GO', gate: true },
+  { n: '\u2462', date: '05/06', topic: 'Avvio sviluppo ingestion', gate: false },
+  { n: '\u2463', date: '12/06', topic: 'Avanzamento ingestion', gate: false },
+  { n: '\u2464', date: '19/06', topic: 'Test ingestion', gate: false },
+  { n: '\u2465', date: '26/06', topic: 'Gate #2 \u2014 PNR', gate: true },
+  { n: '\u2466', date: '03/07', topic: 'Avvio core dev', gate: false },
+  { n: '\u2467', date: '10/07', topic: 'Gate #3', gate: true },
+  { n: '\u2468', date: '17/07', topic: 'Avanzamento core', gate: false },
+  { n: '\u2469', date: '24/07', topic: 'Avanzamento pipeline', gate: false },
+  { n: '\u246A', date: '31/07', topic: 'Chiusura pre-buffer', gate: false },
+  { n: '\u246B', date: '07/08', topic: 'Buffer / pre-ferie', gate: false },
+  { n: '\u246C', date: '28/08', topic: 'Ripresa + avvio UAT', gate: false },
+  { n: '\u246D', date: '04/09', topic: 'Avanzamento UAT', gate: false },
+  { n: '\u246E', date: '11/09', topic: 'Approvazione UAT', gate: true }
+];
+
+function initCalendar() {
+  const cal = document.getElementById('standup-calendar');
+  standupSchedule.forEach(function(s) {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:' + (s.gate ? '#fdedec' : '#fff8e1') + ';border:1px solid ' + (s.gate ? '#f5b7b1' : '#f9e79f') + ';border-radius:6px;padding:6px 8px;text-align:center';
+    div.innerHTML = '<div style="font-weight:700;color:' + (s.gate ? '#922b21' : '#7d6608') + ';font-size:12px">' + s.n + ' ' + s.date + '</div>' +
+                    '<div style="color:#555;font-size:10px;margin-top:2px">' + s.topic + '</div>';
+    cal.appendChild(div);
+  });
+}
+
+function updateMinuteStats() {
+  const count = document.querySelectorAll('#minute-docs .doc-item').length;
+  const badge = document.getElementById('minute-count');
+  const stats = document.getElementById('minute-stats');
+  const empty = document.getElementById('minute-empty');
+
+  if (count > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = count;
+    stats.style.display = 'flex';
+    empty.style.display = 'none';
+  } else {
+    badge.style.display = 'none';
+    stats.style.display = 'none';
+    empty.style.display = 'block';
+  }
+
+  document.getElementById('stat-total').textContent = count;
+
+  // Find next standup
+  const today = new Date();
+  const nextStandup = standupSchedule.find(function(s) {
+    const parts = s.date.split('/');
+    const d = new Date(2026, parseInt(parts[1]) - 1, parseInt(parts[0]));
+    return d >= today;
+  });
+  document.getElementById('stat-next').textContent = nextStandup ? nextStandup.date : '\u2014';
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  return div.innerHTML;
+}
+
+function showToast(msg, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() { toast.classList.remove('show'); }, 3500);
+}
+
+/* ============================================================
+   INIT — Load from IndexedDB on page load
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function() {
+  initCalendar();
+
+  // Set default minute date to next Friday
+  const today = new Date();
+  const daysUntilFri = (5 - today.getDay() + 7) % 7 || 7;
+  const nextFri = new Date(today);
+  nextFri.setDate(today.getDate() + daysUntilFri);
+  document.getElementById('minute-date').value = nextFri.toISOString().split('T')[0];
+
+  // Open DB and restore saved documents
+  openDB().then(function() {
+    // Restore proposte
+    dbGetAll('proposte').then(function(records) {
+      records.forEach(function(r) {
+        renderDocItem(r, 'piano-docs', 'proposte');
+      });
+    });
+
+    // Restore minute
+    dbGetAll('minute').then(function(records) {
+      // Sort by uploadedAt descending
+      records.sort(function(a, b) { return (b.uploadedAt || 0) - (a.uploadedAt || 0); });
+      records.forEach(function(r) {
+        renderMinuteItem(r);
+      });
+      updateMinuteStats();
+    });
+
+    updatePersistBar();
+    showToast('\uD83D\uDCBE Documenti ripristinati dal browser');
+  }).catch(function(err) {
+    console.error('IndexedDB error:', err);
+    document.getElementById('persist-text').innerHTML = '\u26A0\uFE0F IndexedDB non disponibile. I documenti non verranno salvati tra le sessioni.';
+    document.getElementById('persist-bar').className = 'persist-bar warn';
+  });
+});
+</script>
+
+</body>
+</html>

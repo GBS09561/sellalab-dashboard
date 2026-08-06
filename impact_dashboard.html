@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>23844 IMPACT data strategy - Dashboard</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: #fffdf8;
+      --grid: #d8d1c4;
+      --text: #1f2933;
+      --muted: #667085;
+      --setup: #0f766e;
+      --prev: #2563eb;
+      --danni: #c2410c;
+      --mig: #7c3aed;
+      --gov: #111827;
+      --critical: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Segoe UI, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15,118,110,0.08), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(124,58,237,0.08), transparent 30%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .hero-card, .stats, .panel {
+      background: var(--panel);
+      border: 1px solid var(--grid);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    }
+    .hero-card {
+      padding: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .keyline {
+      font-size: 15px;
+      line-height: 1.32;
+      max-width: 850px;
+    }
+    .stats {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+    .stat {
+      border: 1px solid var(--grid);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fcfaf5;
+    }
+    .stat .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+    .stat .value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .bands {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 8px;
+      margin: 12px 0 2px;
+    }
+    .band {
+      border-radius: 14px;
+      padding: 8px 10px;
+      color: white;
+      font-weight: 600;
+      min-height: 58px;
+    }
+    .setup { background: linear-gradient(135deg, #115e59, #0f766e); }
+    .prev { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
+    .danni { background: linear-gradient(135deg, #9a3412, #c2410c); }
+    .mig { background: linear-gradient(135deg, #6d28d9, #7c3aed); }
+    .band small { display: block; opacity: 0.9; margin-top: 6px; font-weight: 500; }
+    .panel {
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--grid);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .panel-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .panel-header span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .table-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: white;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: #f8f4ec;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--grid);
+      padding: 10px 6px;
+    }
+    th.task, td.task {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: white;
+      width: 238px;
+      min-width: 238px;
+      max-width: 238px;
+      border-right: 1px solid var(--grid);
+      padding: 7px 9px;
+    }
+    thead th.task {
+      z-index: 4;
+      background: #f8f4ec;
+    }
+    td {
+      border-bottom: 1px solid var(--grid);
+      padding: 0;
+      height: 28px;
+    }
+    tr.section-row td {
+      background: #f8f4ec;
+      font-weight: 700;
+      color: #344054;
+      padding: 6px 9px;
+    }
+    .task-title {
+      font-weight: 700;
+      margin-bottom: 3px;
+      font-size: 12px;
+    }
+    .task-meta {
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.15;
+    }
+    .week {
+      width: calc((100% - 238px) / 22);
+      min-width: 26px;
+      background-image: linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 100% 100%;
+    }
+    .milestone-cell {
+      position: relative;
+    }
+    .diamond {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      background: #111827;
+      border: 2px solid white;
+      transform: translate(-50%, -50%) rotate(45deg);
+      box-shadow: 0 0 0 1px rgba(17,24,39,0.18);
+    }
+    .checkpoint-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .checkpoint-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      border-left: 2px dashed rgba(185,28,28,0.65);
+    }
+    .checkpoint-label {
+      position: absolute;
+      top: 4px;
+      transform: translateX(-50%);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #8b1e1e;
+      background: rgba(255,253,248,0.92);
+      padding: 4px 3px;
+      border-radius: 8px;
+      border: 1px solid rgba(185,28,28,0.2);
+    }
+    .fill-setup { background-color: rgba(15,118,110,0.75); }
+    .fill-prev { background-color: rgba(37,99,235,0.75); }
+    .fill-danni { background-color: rgba(194,65,12,0.75); }
+    .fill-mig { background-color: rgba(124,58,237,0.68); }
+    .fill-gov { background-color: rgba(17,24,39,0.72); }
+    .fill-critical { background-color: rgba(185,28,28,0.92); }
+    .bottom {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .notes, .risks {
+      padding: 14px;
+    }
+    .notes h3, .risks h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.5;
+    }
+    li { margin: 6px 0; }
+    .risk-tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+    .red { background: #b91c1c; }
+    .amber { background: #d97706; }
+    .green { background: #15803d; }
+    @media (max-width: 1100px) {
+      .hero, .bottom { grid-template-columns: 1fr; }
+      .bands { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+      .table-wrap { overflow: auto; }
+      th.task, td.task { width: 220px; min-width: 220px; max-width: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-card">
+        <h1>23844 IMPACT data strategy</h1>
+        <div class="subtitle">Dashboard di programma | Agosto - Dicembre 2026 | Calendario lavorativo lun-ven</div>
+        <div class="keyline">Il piano porta a go live entro il 31/12/2026 attraverso tre assi coordinati: completamento analisi e setup piattaforma, delivery applicativa di Previdenza e Assicurativo Danni, e migrazione parallela delle procedure H1 con automazione progressiva della lettura flussi Board.</div>
+        <div class="bands">
+          <div class="band setup">Analisi e setup<small>01/08 - 14/09</small></div>
+          <div class="band prev">Previdenza<small>Go live 10/11</small></div>
+          <div class="band danni">Assicurativo Danni<small>Go live 02/12</small></div>
+          <div class="band mig">Migrazione piattaforma<small>15/09 - 29/12</small></div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="label">Setup piattaforma</div><div class="value">14/09/2026</div></div>
+        <div class="stat"><div class="label">Deadline Flussi Sella/HDA</div><div class="value">30/09/2026</div></div>
+        <div class="stat"><div class="label">UAT</div><div class="value">Mista, 3 giorni</div></div>
+        <div class="stat"><div class="label">Target Finale</div><div class="value">Go live 31/12/2026</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Gantt Operativo</h2>
+        <span>Percorso critico: flussi Sella/HDA, stream Danni, chiusura migrazione</span>
+      </div>
+      <div class="table-wrap">
+        <table id="ganttTable">
+          <thead id="ganttHead"></thead>
+          <tbody id="ganttBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="panel notes">
+        <h3>Messaggio Executive</h3>
+        <ul>
+          <li>Analisi, tracciati e setup nuova piattaforma completati entro metà settembre.</li>
+          <li>Previdenza rilasciata entro il 10 novembre, con finestra UAT corta ma gestibile tramite casi prioritizzati.</li>
+          <li>Assicurativo Danni dipende in modo critico dalla consegna definitiva dei flussi Sella Broker e HDA entro il 30 settembre.</li>
+          <li>La migrazione su nuova piattaforma procede in parallelo con priorità Attivo, Raccolta, Credito e Mainstreet.</li>
+          <li>L'automazione della lettura flussi Board accompagna l'intera migrazione e abilita stabilità operativa a fine anno.</li>
+        </ul>
+      </div>
+      <div class="panel risks">
+        <h3>Rischi e Mitigazioni</h3>
+        <ul>
+          <li><span class="risk-tag red">Rosso</span>Ritardo flussi Sella/HDA. Mitigazione: validazione quasi definitiva entro il 15/09.</li>
+          <li><span class="risk-tag amber">Giallo</span>UAT di 3 giorni. Mitigazione: casi test preparati già in SIT e perimetro congelato.</li>
+          <li><span class="risk-tag amber">Giallo</span>Sovrapposizione rilascio e migrazione. Mitigazione: checkpoint del 16/11 con decisioni di ripianificazione se necessarie.</li>
+          <li><span class="risk-tag green">Verde</span>Team separati Porzio e Drago Montorio riducono il conflitto di capacità.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const start = new Date('2026-08-01T00:00:00');
+    const end = new Date('2026-12-31T00:00:00');
+    const checkpoints = [
+      { label: 'Flussi Sella/HDA', date: '2026-09-30' },
+      { label: 'Checkpoint Programma', date: '2026-11-16' }
+    ];
+    const sections = [
+      {
+        name: 'Analisi e Setup',
+        items: [
+          { task: 'Chiusura analisi previdenza e assicurativo danni', start: '2026-08-01', end: '2026-08-06', cls: 'fill-setup', meta: 'Berti' },
+          { task: 'Condivisione tracciati Excel struttura tabelle e nomi campi', start: '2026-08-07', end: '2026-08-12', cls: 'fill-setup', meta: 'Berti, Drago' },
+          { task: 'Attivita preparatorie nuova piattaforma', start: '2026-08-10', end: '2026-09-14', cls: 'fill-setup', meta: 'Berti | Jira, workspace, mirroring DBU' }
+        ]
+      },
+      {
+        name: 'Previdenza',
+        items: [
+          { task: 'Sviluppo Previdenza', start: '2026-09-14', end: '2026-10-16', cls: 'fill-prev', meta: 'Drago Montorio' },
+          { task: 'Test, UAT e fix Previdenza', start: '2026-10-19', end: '2026-11-06', cls: 'fill-prev', meta: 'Team misto + Drago Montorio | Go live 10/11', milestone: '2026-11-10' }
+        ]
+      },
+      {
+        name: 'Assicurativo Danni',
+        items: [
+          { task: 'Ricezione definitiva flussi Sella Broker e HDA', start: '2026-09-30', end: '2026-09-30', cls: 'fill-critical', meta: 'Milestone critica' },
+          { task: 'Sviluppo Assicurativo Danni', start: '2026-09-28', end: '2026-11-06', cls: 'fill-danni', meta: 'Drago Montorio | Avvio a +2 settimane' },
+          { task: 'Test, UAT e fix Assicurativo Danni', start: '2026-11-09', end: '2026-11-30', cls: 'fill-danni', meta: 'Team misto + Drago Montorio | Go live 02/12', milestone: '2026-12-02' }
+        ]
+      },
+      {
+        name: 'Migrazione nuova piattaforma',
+        items: [
+          { task: 'Benchmark e Anagrafica migrazione e collaudo', start: '2026-12-01', end: '2026-12-23', cls: 'fill-mig', meta: 'Porzio | Perimetro dati finale' },
+          { task: 'Attivo finanziario migrazione e collaudo', start: '2026-09-23', end: '2026-10-23', cls: 'fill-mig', meta: 'Priorita 1' },
+          { task: 'Raccolta migrazione e collaudo', start: '2026-10-05', end: '2026-11-06', cls: 'fill-mig', meta: 'Priorita 2' },
+          { task: 'Credito migrazione e collaudo', start: '2026-11-02', end: '2026-11-27', cls: 'fill-mig', meta: 'Priorita 3' },
+          { task: 'Mainstreet migrazione e collaudo', start: '2026-11-16', end: '2026-12-11', cls: 'fill-mig', meta: 'Priorita 4' },
+          { task: 'Automazione lettura flussi Board', start: '2026-09-21', end: '2026-12-18', cls: 'fill-mig', meta: 'Porzio | Incrementale per dominio | Go live 29/12', milestone: '2026-12-29' }
+        ]
+      },
+      {
+        name: 'Programma',
+        items: []
+      }
+    ];
+
+    function formatLabel(date) {
+      return date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+    }
+
+    function parseISO(value) {
+      return new Date(value + 'T00:00:00');
+    }
+
+    function totalDaysBetween(a, b) {
+      return Math.floor((b - a) / 86400000) + 1;
+    }
+
+    function totalWeeksBetween(a, b) {
+      return Math.ceil(totalDaysBetween(a, b) / 7);
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function weekIndexFor(dateValue) {
+      const date = parseISO(dateValue);
+      return Math.floor((date - start) / 86400000 / 7);
+    }
+
+    function addCheckpoints(totalWeeks) {
+      const wrap = document.querySelector('.table-wrap');
+      const existing = wrap.querySelector('.checkpoint-layer');
+      if (existing) {
+        existing.remove();
+      }
+      const layer = document.createElement('div');
+      layer.className = 'checkpoint-layer';
+      const leftOffset = 238;
+      const weekWidth = (wrap.clientWidth - leftOffset) / totalWeeks;
+
+      checkpoints.forEach((checkpoint) => {
+        const index = Math.max(0, Math.min(totalWeeks - 1, weekIndexFor(checkpoint.date)));
+        const left = leftOffset + (index + 0.5) * weekWidth;
+        const line = document.createElement('div');
+        line.className = 'checkpoint-line';
+        line.style.left = left + 'px';
+
+        const label = document.createElement('div');
+        label.className = 'checkpoint-label';
+        label.style.left = left + 'px';
+        label.textContent = checkpoint.label;
+
+        layer.appendChild(line);
+        layer.appendChild(label);
+      });
+
+      wrap.appendChild(layer);
+    }
+
+    function buildHead() {
+      const thead = document.getElementById('ganttHead');
+      const row = document.createElement('tr');
+      const task = document.createElement('th');
+      task.className = 'task';
+      task.textContent = 'Attivita';
+      row.appendChild(task);
+      const totalWeeks = totalWeeksBetween(start, end);
+      for (let i = 0; i < totalWeeks; i++) {
+        const th = document.createElement('th');
+        const current = addDays(start, i * 7);
+        th.className = 'week';
+        th.textContent = formatLabel(current);
+        row.appendChild(th);
+      }
+      thead.appendChild(row);
+    }
+
+    function buildBody() {
+      const tbody = document.getElementById('ganttBody');
+      const totalWeeks = totalWeeksBetween(start, end);
+      sections.forEach(section => {
+        if (!section.items.length) {
+          return;
+        }
+        const sectionRow = document.createElement('tr');
+        sectionRow.className = 'section-row';
+        const label = document.createElement('td');
+        label.className = 'task';
+        label.textContent = section.name;
+        sectionRow.appendChild(label);
+        const fill = document.createElement('td');
+        fill.colSpan = totalWeeks;
+        sectionRow.appendChild(fill);
+        tbody.appendChild(sectionRow);
+
+        section.items.forEach(item => {
+          const tr = document.createElement('tr');
+          const taskCell = document.createElement('td');
+          taskCell.className = 'task';
+          const from = item.start.split('-').reverse().join('/');
+          const to = item.end.split('-').reverse().join('/');
+          taskCell.innerHTML = '<div class="task-title">' + item.task + '</div><div class="task-meta">' + item.meta + ' | ' + from + ' - ' + to + '</div>';
+          tr.appendChild(taskCell);
+          const startDate = parseISO(item.start);
+          const endDate = parseISO(item.end);
+
+          for (let i = 0; i < totalWeeks; i++) {
+            const current = addDays(start, i * 7);
+            const weekEnd = addDays(current, 6);
+            const cell = document.createElement('td');
+            cell.className = 'week';
+            if (current <= endDate && weekEnd >= startDate) {
+              cell.classList.add(item.cls);
+            }
+            if (item.milestone && i === weekIndexFor(item.milestone)) {
+              cell.classList.add('milestone-cell');
+              const diamond = document.createElement('span');
+              diamond.className = 'diamond';
+              cell.appendChild(diamond);
+            }
+            tr.appendChild(cell);
+          }
+          tbody.appendChild(tr);
+        });
+      });
+
+      addCheckpoints(totalWeeks);
+    }
+
+    buildHead();
+    buildBody();
+    window.addEventListener('resize', () => addCheckpoints(totalWeeksBetween(start, end)));
+  </script>
+</body>
+</html>
